@@ -63,7 +63,7 @@ extern "C" {
 #define PDM_ID_POWER_ON_COUNTER           0xa
 #define PDM_ID_APP_REPORTS                0xb
 #define PDM_ID_OTA_DATA                   0xc
-//#define PDM_ID_APP_IASZONE              0xd
+#define PDM_ID_APP_IASZONE                0xd
 //#define PDM_ID_APP_IASZONE_NODE         0xe
 //#define PDM_ID_APP_IASACE_ZONE_TABLE    0xf
 //#define PDM_ID_APP_IASACE_ZONE_PARAM    0x10

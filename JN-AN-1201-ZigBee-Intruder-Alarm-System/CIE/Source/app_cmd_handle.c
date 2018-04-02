@@ -63,6 +63,7 @@ PUBLIC CJP_Status fCJP_Tx_Coor(CJP_CmdID cmd_coor , uint8 *pdata , uint8 len)
 
 }
 
+
 PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid)
 {
 	uint8 sdata[3];
@@ -81,6 +82,7 @@ PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid)
 	return status;
 
 }
+
 
 PUBLIC void fBuildNet_Notice(CJP_Status status)
 {

@@ -11,182 +11,123 @@
 #include "Array_list.h"
 
 
-sarrayList     arraylist;
-
-
 //初始化顺序表：给出初始化长度
-bool Array_init(ElemType * arrayhead , uint8 totalsize )
+bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize )
 {
 
-	arraylist->Array= arrayhead;
-    arraylist->current_num=0;
-    arraylist->size=totalsize;
-    if(NULL==arraylist->Array)
+	alist->Array = arrayhead;
+	alist->current_num=0;
+	alist->size=totalsize;
+    if(NULL==alist->Array)
         return FALSE;
     else
         return TRUE;
 }
-/*
+
 //删除顺序表
-void deleteArray(arrayList* arrLst)
+void DeleteArray(sarrayList  * alist)
 {
-    arrLst->length = 0;
-    arrLst->size = 0;
-    free(arrLst->Array);
-    arrLst->Array = NULL;
+	alist->Array = NULL;
+	alist->current_num = 0;
+	alist->size = 0;
+
 }
 
-//清空顺序表
-void clearArray(arrayList *arrLst)
-{
-    arrLst->length = 0;
-}
 
-//判断是否为空
-bool is_empty(arrayList *arrLst)
+
+//判断顺序列表为空
+bool IsEmpty(sarrayList * alist)
 {
-    if(0==arrLst->length)
+    if(0==alist->current_num)
     {
         printf("the arrayList is empty!\n");
-        return true;
+        return TRUE;
     }
     else
     {
         printf("the arrayList is not empty!\n");
-        return false;
+        return FALSE;
     }
 
 }
 
-//求有多少个元素
-int arrayLength(arrayList *arrLst)
+//列表中有多少个元素
+uint8 ArrayLength(sarrayList *alist)
 {
-    return arrLst->length;
+    return alist->current_num;
 }
+
 //取出某个元素
-bool getElem(arrayList* arrLst,int index,ElemType *e)
+bool GetElem(sarrayList* alist,uint8 index,ElemType *e)
 {
-    if(index<0||index>arrayLength(arrLst)-1)
+    if((index>ArrayLength(alist))||(index==0))
     {
-        printf("超出边界!\n");
-        return false;
+        printf("无效的地址!\n");
+        return FALSE;
     }
     else
     {
-        *e=arrLst->Array[index];
-        return true;
+        *e=alist->Array[index-1];
+        return TRUE;
     }
 }
 
 //遍历顺序表，并打印
-void printfArray(arrayList *arrLst)
+void PrintfArray(sarrayList *alist)
 {
+	uint8 i=0;
     printf("array elements are: ");
-    for(int i=0;i<arrLst->length;i++)
+    for(i=0;i<alist->current_num;i++)
     {
-        printf("%d\t",arrayList->Array[i]);
+        printf("%d\t",alist->Array[i]);
     }
     printf("\n");
 }
 
 //判断某个元素的位置
-int locateElem(arrayList *arrLst,ElemType e)
+//通过YCL来判断元素的位置
+uint8 LocateElem(sarrayList *alist,uYcl ycl)
 {
-    for(int i=0;i<arrayLength(arrLst);i++)
+	uint8 i=0;
+    for(i=0;i<ArrayLength(alist);i++)
     {
-        if(e==arrLst->Array[i])
-            return i;
+    	if(memcmp(alist->Array[i].ycl,ycl,sizeof(uYcl))==0)//内存比较函数
+    	{
+    		return i+1;
+    	}
     }
-    return -1;
+    return 255;//代表返回错误
 }
 
-//求某个元素的前驱：如果没找到返回-2；如果是第一个元素。返回-1；否则返回前驱元素的下标
-int preElement(arrayList *arrLst,ElemType e,ElemType *preElem)
+//添加某个元素
+bool AddElem(sarrayList *alist,ElemType e)
 {
-    for(int i=0;i<arrayLength(arrLst);i++)
-    {
-        if(e==arrLst->Array[i])
-        {
-            if(i==0)
-            {
-                return -1;
-            }
-            else
-            {
-                preElem=arrLst->Array[i-1];
-                return i-1;
-            }
-        }
-    }
-    return -2;
-}
-
-
-//求某个元素的后继：如果没找到，返回-2,如果是最后一个元素，返回-1；否则返回后继元素的下标
-int nextElement(arrayList *arrLst,ElemType e,ElemType *nxtElem)
-{
-    for(int i = 0; i < arrayLength(arrLst); ++i)
-    {
-        if(e == arrLst->Array[i])
-        {
-            if(arrayLength(arrLst) -1 == i)
-            {
-                return -1;
-            }
-            else
-            {
-                *nxtElem = arrLst->Array[i+1];
-                return i+1;
-            }
-        }
-    }
-    return -2;
-}
-
-//将元素插入到指定位置
-bool insertElem(arrayList *arrLst,int index,ElemType e)
-{
-    //先判断插入位置是否合法
-    if(index<0||index>arrayLength(arrLst)-1)
-    {
-        return false;
-    }
+	uint8 index=0;
      //如果顺序表存储空间已满，则需要重新分配内存
-     if(arrLst->length==arrLst->size)
-     {
-        arrLst->Array=(ElemType*)reolloc(arrLst->Array,2*arrLst->size*sizeof(ElemType));
-        if(NULL==arrLst->Array)
-            return false;//分配空间失败
-        else
-        {
-            arrLst->size*=2;
-        }
-     }
-    for(int i = index; i < arrayLength(arrLst); ++i)
+    if(alist->current_num==alist->size)
     {
-        arrLst->Array[i+1]=arrLst->Array[i];
+    	return FALSE;//列表已满
     }
-    arrLst->Array[index]=e;
-    ++arrLst->length;
-
-    return true;
+    index=ArrayLength(alist);
+    alist->Array[index]=e;
+    ++alist->current_num;
+    return TRUE;
 }
 
 //删除某个元素
-bool deleteElem(arrayList *arrLst,int index ,ElemType *e)
+bool DelElem(sarrayList *alist,uint8 index)
 {
+	uint8 i=0;
     //先判断插入位置是否合法
-    if(index<0||index>arrayLength(arrLst)-1)
+    if((index==0)||(index>ArrayLength(alist)))
     {
-        return false;
+        return FALSE;
     }
-    *e=array->Array[index];
-    for(int i = index; i < arrayLength(arrLst); ++i)
+    for(i = index; i < ArrayLength(alist); i++)
     {
-        arrLst->Array[i]=arrLst->Array[i+1];
+        alist->Array[i-1]=alist->Array[i];
     }
+    --alist->current_num;
 
-    --arrLst->length;
-
-    return true;
+    return TRUE;
 }

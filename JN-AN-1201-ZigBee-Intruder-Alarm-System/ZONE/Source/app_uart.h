@@ -87,8 +87,8 @@ typedef  union {
 		uint8 Hv_Logo;
 		uint32 Hv_YCL_ID;
 		uint16 Hv_TecPro;
-		uint16 Hv_Dev_Date[2];
 		uint8  Hv_Dev_Company;
+		uint16 Hv_Dev_Date[2];
 		uint8  Hv_Prod_Ser;
 	};
 }uHard_Ver;

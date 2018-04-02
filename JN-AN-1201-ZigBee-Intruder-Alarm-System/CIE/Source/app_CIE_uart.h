@@ -9,6 +9,8 @@
 #define APP_CIE_UART_H_
 
 #include "app_events.h"
+#include "jendefs.h"
+#include "zcl.h"
 #define BUILD_UINT16(loByte, hiByte) \
           ((uint16)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)))
 
@@ -186,8 +188,12 @@ typedef struct{
 
 typedef struct{
 	uYcl   ycl;
-	uint16 clusterID;
-	uint16 hearttime;
+	uint16 clusterID;   //
+	uint16 hearttime;   //心跳时间
+	uint16 Msoftver;   //通信模块的软件版本
+	uint16 Ssoftver;  //传感厂家软件版本
+	uint16 Hardver;  //硬件版本
+	uint8  Factcode; //厂家代码
 }sEnddev_BasicInf;
 
 typedef union{

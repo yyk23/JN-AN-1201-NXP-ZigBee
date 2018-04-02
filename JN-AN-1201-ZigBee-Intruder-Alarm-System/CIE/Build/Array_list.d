@@ -1,5 +1,5 @@
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Build/app_ias_save.o: \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_ias_save.c \
+Array_list.o: \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.c \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/include/stdint.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/stdint.h \
@@ -20,15 +20,13 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/types.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/machine/types.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/stdio.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/OS/Include/os.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/os_gen.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDM/Include/pdm.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Aes/Include/AHI_AES.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/pdm_ids.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_apl.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_common.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/OS/Include/os.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSAPL/Include/zps_apl_af.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSMAC/Include/mac_vs_sap.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_nwk.h \
@@ -56,16 +54,11 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSNWK/Include/zps_nwk_slist.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSTSV/Include/zps_tsv.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSNWK/Include/zps_nwk_sec.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Aes/Include/AHI_AES.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSNWK/Include/zps_nwk_pub.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSAPL/Include/zps_apl_zdp.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/zcl_options.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASZONE.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/dlist.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_ias_indicator.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/app_timer_driver.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/Utilities.h
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/zcl_options.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
 
@@ -107,23 +100,19 @@ c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4
 
 c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/stdio.h:
 
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/OS/Include/os.h:
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h:
 
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/os_gen.h:
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:
 
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDM/Include/pdm.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Aes/Include/AHI_AES.h:
-
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/pdm_ids.h:
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_apl.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_common.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/OS/Include/os.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSAPL/Include/zps_apl_af.h:
 
@@ -179,22 +168,12 @@ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSTSV/Include/zps_tsv.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSNWK/Include/zps_nwk_sec.h:
 
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Aes/Include/AHI_AES.h:
+
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSNWK/Include/zps_nwk_pub.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZPSAPL/Include/zps_apl_zdp.h:
 
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/zcl_options.h:
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/zcl_options.h:
 
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASZONE.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/dlist.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h:
-
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_ias_indicator.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/app_timer_driver.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/Utilities.h:
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h:

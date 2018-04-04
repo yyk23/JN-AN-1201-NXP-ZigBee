@@ -78,7 +78,6 @@ PUBLIC usLinkKey Linkkey_Calculate( uYcl Ycl)
 
 	linkkey_tmp.LinkKey_YCL=ycl_tmp;
 	linkkey_tmp.LinkKey_Last4By=((uint32)*(&(ycl_tmp.YCL_Array[11]))+(uint32)*(&(ycl_tmp.YCL_Array[7]))+(uint32)*(&(ycl_tmp.YCL_Array[3])))/0xFFFF;
-
 	return linkkey_tmp;
 }
 

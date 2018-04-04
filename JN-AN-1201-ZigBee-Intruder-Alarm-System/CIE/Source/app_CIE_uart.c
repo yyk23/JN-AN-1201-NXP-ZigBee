@@ -39,6 +39,7 @@
 #include "CRC_Table.h"
 #include "app_cmd_handle.h"
 #include "app_data_handle.h"
+#include "Array_list.h"
 
 
 #define TRACE_APP_UART    TRUE
@@ -67,9 +68,15 @@
 /**/
 uint16 Frame_Seq=0xFFFF;
 uint8  Uart_STxBuf[UART_TX_MAX_NUM+1];
+uint16 Frame_SeqQueue[FRAME_SEQ_MAX_NUM+1];
 uSoft_Ver CIE_soft_ver;
 uYcl      CIE_Ycl;
-static tszQueue         APP_msgSerialRx;
+
+sEnddev_BasicInf   Enddev_BasicInf[MAX_DEV_MANAGE_NUM];
+sAttr_Model_Array  Attr_Model_Array[MAX_DEV_MODEL_NUM];
+sCoor_Dev_manage   Coor_Dev_manage;
+static tszQueue    APP_msgframe;
+static tszQueue    APP_msgSerialRx;
 /**/
 static uint8  Uart_Analysis_Step = UART_RX_NULL;
 static uint8  Uart_DMA_RxBuf[UART_DMA_RXBUF_LEN];
@@ -100,7 +107,9 @@ PUBLIC void Uart_Task_Init(void)
 {
   User_Uart_Init();
   ZQ_vQueueCreate ( &APP_msgSerialRx, UART_RX_MAX_NUM  , sizeof ( uint8 ), (uint8*)Uart_SRxQueue );//初始化串口接收队列
+  ZQ_vQueueCreate ( &APP_msgframe, FRAME_SEQ_MAX_NUM  , sizeof  ( uint16 ), (uint8*)Frame_SeqQueue );//初始化CJP 协议的帧序列号
   CIE_data_Init();
+  Array_init(&alist,Enddev_BasicInf , MAX_DEV_MANAGE_NUM ,Coor_Dev_manage.dev_num);//初始化设备列表
 }
 /*
  * 串口初始化函数

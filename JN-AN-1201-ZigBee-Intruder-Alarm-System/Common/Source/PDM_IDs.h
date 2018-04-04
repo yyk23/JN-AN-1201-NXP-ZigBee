@@ -84,7 +84,6 @@ extern "C" {
 
 //设备基本列表
 #define PDM_ID_CIE_END_DEV_TABLE       0x40  //设备列表   所占最大空间30*sizeof(sEnddev_BasicInf)
-#define MAX_DEV_NUM                    0x1E  //最大终端设备数量
 
 
 //设备模型列表
@@ -96,8 +95,7 @@ extern "C" {
 #define PDM_ID_CIE_DEV_MODEL_TABLE_6   0x55  //模型列表的第6
 #define PDM_ID_CIE_DEV_MODEL_TABLE_7   0x56  //模型列表的第7
 #define PDM_ID_CIE_DEV_MODEL_TABLE_8   0x57  //模型列表的第8
-#define MAX_DEV_MODEL_NUM              0x08  //最大存储8个模型
-#define MAX_DEV_MODEL_ATTR_NUM         0x0F  //每个模型的最大属性个数
+
 
 
 

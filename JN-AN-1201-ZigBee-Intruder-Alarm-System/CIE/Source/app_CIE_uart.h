@@ -11,9 +11,12 @@
 #include "app_events.h"
 #include "jendefs.h"
 #include "zcl.h"
+
 #define BUILD_UINT16(loByte, hiByte) \
           ((uint16)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)))
 
+
+#define VALID_VALUE                0xAA
 
 #define UART_RX_MAX_NUM            150
 #define UART_RX_DATA_MAX_NUM       130  //最大数据段字节数量
@@ -47,6 +50,12 @@
 #define PERMIT_JOIN_TIME  50
 
 #define BASIC_CLUSTER    0x0000
+
+#define MAX_DEV_MODEL_NUM              0x08  //最大存储8个模型
+#define MAX_DEV_MODEL_ATTR_NUM         0x0F  //每个模型的最大属性个数
+
+#define MAX_DEV_MANAGE_NUM             20
+#define FRAME_SEQ_MAX_NUM              5
 
 #pragma pack(1)    //按照1字节对齐,指明对齐方式
 
@@ -207,6 +216,10 @@ typedef union{
 	}attr;
 }uAttr_Model;
 
+typedef struct{
+
+	uAttr_Model  Attr_Model[MAX_DEV_MODEL_ATTR_NUM];
+}sAttr_Model_Array;
 
 typedef struct{
 	uint8 valid_flag;
@@ -214,7 +227,7 @@ typedef struct{
 	uint8 dev_full_flag;
 	uint8 model_num;
 	uint8 model_full_flag;
-	uint8 model_memory_manage;
+	uint8 model_memory_manage; //管理8个数据包
 }sCoor_Dev_manage;//协调器的整体设备管理和存储信息
 
 
@@ -226,7 +239,9 @@ extern uint16 Frame_Seq;
 extern uint8  Uart_STxBuf[UART_TX_MAX_NUM+1];
 extern uSoft_Ver CIE_soft_ver;
 extern uYcl      CIE_Ycl;
-
+extern sEnddev_BasicInf   Enddev_BasicInf[MAX_DEV_MANAGE_NUM];
+extern sAttr_Model_Array  Attr_Model_Array[MAX_DEV_MODEL_NUM];
+extern sCoor_Dev_manage   Coor_Dev_manage;
 extern void Uart_Task_Init(void);
 PUBLIC void User_Uart_Init(void);
 PUBLIC uint16 Uart_ProcessEvent( uint8 task_id, uint16 events );

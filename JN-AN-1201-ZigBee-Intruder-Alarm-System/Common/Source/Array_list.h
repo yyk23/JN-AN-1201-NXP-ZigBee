@@ -23,8 +23,8 @@ typedef struct {
     uint8 size;      //数组的最大容量
 }sarrayList;
 
-
-bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize );
+extern sarrayList alist;
+bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize ,uint8 num);
 void DeleteArray(sarrayList  * alist);
 bool IsEmpty(sarrayList * alist);
 uint8 ArrayLength(sarrayList *alist);

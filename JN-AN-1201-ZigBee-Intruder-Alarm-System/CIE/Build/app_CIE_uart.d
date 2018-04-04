@@ -89,7 +89,10 @@ app_CIE_uart.o: \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/string.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/CRC_Table.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_cmd_handle.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
 
@@ -270,3 +273,9 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_cmd_handle.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h:

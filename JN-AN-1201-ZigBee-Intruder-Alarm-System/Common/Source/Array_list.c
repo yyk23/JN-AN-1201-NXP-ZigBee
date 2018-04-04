@@ -10,13 +10,13 @@
 #include "jendefs.h"
 #include "Array_list.h"
 
-
+sarrayList alist;
 //初始化顺序表：给出初始化长度
-bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize )
+bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize ,uint8 num )
 {
 
 	alist->Array = arrayhead;
-	alist->current_num=0;
+	alist->current_num=num;
 	alist->size=totalsize;
     if(NULL==alist->Array)
         return FALSE;

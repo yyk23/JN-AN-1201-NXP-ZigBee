@@ -341,6 +341,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
            break;
            //收到已经对单个节点的所有attributes解析完成，生成此消息
     case   E_ZCL_CBET_REPORT_ATTRIBUTES:
+
     	 DBG_vPrintf(TRACE_ZCL,"E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE");
     		break;
 

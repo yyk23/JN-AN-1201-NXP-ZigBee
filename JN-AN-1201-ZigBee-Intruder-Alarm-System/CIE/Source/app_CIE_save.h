@@ -38,6 +38,7 @@
 
 #include "pdm.h"
 #include "IASACE.h"
+#include "app_CIE_uart.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
@@ -48,15 +49,16 @@
 /****************************************************************************/
 /***        Exported Functions                                            ***/
 /****************************************************************************/
+PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf);
+PUBLIC bool dele_dev_data_manage(uYcl ycl);
+PUBLIC bool add_dev_model_data_manage(sAttr_Model_Array Model_Array);
+PUBLIC bool get_dev_model(uint16 tclusterId,sAttr_Model_Array *Model_Array);
+PUBLIC uint8  find_dev_model(uint16  tclusterId);
 PUBLIC void vLoadIASCIEFromEEPROM(uint8 u8SourceEndpoint);
 PUBLIC void vVerifyIASCIELoad(uint8 u8SourceEndpoint);
 /****************************************************************************/
 /***        External Variables                                            ***/
 /****************************************************************************/
 
-/****************************************************************************/
-
-/****************************************************************************/
-/****************************************************************************/
 
 #endif /*APP_IAS_SAVE_H_*/

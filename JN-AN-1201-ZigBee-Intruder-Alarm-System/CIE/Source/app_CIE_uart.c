@@ -200,7 +200,6 @@ OS_TASK(APP_CIE_taskuart)
     	CJP_Analysis();
     	OS_eStopSWTimer (APP_uart_cycle);
     	OS_eStartSWTimer (APP_uart_cycle, APP_TIME_MS(1), NULL);
-
      }
 
 
@@ -370,7 +369,7 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
   {
 	  return CJP_ERROR;
   }
-
+  Frame_Seq=CJP_Head->u16FSeq;
   /*
    * 和终端的通信数据
    */
@@ -398,14 +397,14 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  	  default :
 	  		  break;
 
-	  }
-
+	    }
 	  return CJP_SUCCESS;
   }
 
 
  /*
-* 和协调器之间的通信
+  *
+  * 和协调器之间的通信
  */
   else if(CJP_Head->u8FrType==F_JNI_COOR)
   {

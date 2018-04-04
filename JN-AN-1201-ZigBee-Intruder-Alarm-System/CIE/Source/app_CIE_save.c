@@ -44,6 +44,7 @@
 #include "app_zcl_CIE_task.h"
 #include "app_CIE_uart.h"
 #include "Array_list.h"
+#include "app_CIE_save.h"
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
@@ -185,7 +186,7 @@ PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf)
 	}
 	else
 	{
-		Coor_Dev_manage.dev_num=alist.current_num;//同步一下
+		Coor_Dev_manage.dev_num = alist.current_num;//同步一下
 	}
 
 	PDM_eSaveRecordData( 		PDM_ID_CIE_END_DEV_TABLE,
@@ -196,6 +197,7 @@ PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf)
 	PDM_eSaveRecordData( 		PDM_ID_CIE_DEV_MANAGE_INF,
 		                        &Coor_Dev_manage,
 		                        sizeof(sCoor_Dev_manage));
+	return TRUE;
 
 }
 
@@ -224,10 +226,11 @@ PUBLIC bool dele_dev_data_manage(uYcl ycl)
 	PDM_eSaveRecordData( 		PDM_ID_CIE_DEV_MANAGE_INF,
 			                    &Coor_Dev_manage,
 			                    sizeof(sCoor_Dev_manage));
+	return TRUE;
 
 }
 
-PUBLIC bool add_dev_model_data_manage(sAttr_Model_Array *Model_Array)
+PUBLIC bool add_dev_model_data_manage(sAttr_Model_Array Model_Array)
 {
 	uint8 mp=0;
 
@@ -236,35 +239,42 @@ PUBLIC bool add_dev_model_data_manage(sAttr_Model_Array *Model_Array)
 		return FALSE;
 	}
 	//检查是否存在相同的模型，
-	mp = find_dev_model(Model_Array->Attr_Model.head.clusterID);
+	mp = find_dev_model(Model_Array.Attr_Model->head.clusterID);
 	if(mp == 255)
+	{
 	//添加到模型列表
 		Attr_Model_Array[Coor_Dev_manage.model_num] = Model_Array;
+	}
 	else
+	{
 	//更新模型列表
 		Attr_Model_Array[mp-1] = Model_Array;
+	}
 
 	PDM_eSaveRecordData( 		 PDM_ID_CIE_DEV_MODEL_TABLE_1+Coor_Dev_manage.model_num	,
-								 Model_Array,
+								 &Model_Array,
 		                         sizeof(sAttr_Model_Array));//
 	Coor_Dev_manage.model_num++;
 
 	PDM_eSaveRecordData( 		  PDM_ID_CIE_DEV_MANAGE_INF,
 				                  &Coor_Dev_manage,
 				                  sizeof(sCoor_Dev_manage));//
+	return TRUE;
 
 }
 
 /*
  * 获取设备模型的位置
  * 根据clusterID来寻找模型，存在返回位置，不存在则返回255
+ *
  */
-PUBLIC uint8 find_dev_model(uint16 tclusterId)
+
+PUBLIC  uint8  find_dev_model(uint16  tclusterId)
 {
 	uint8 i=0;
 	for(i=0;i<Coor_Dev_manage.model_num;i++)
 	{
-		if(Attr_Model_Array[i].Attr_Model.head.clusterID == tclusterId)
+		if(Attr_Model_Array[i].Attr_Model->head.clusterID == tclusterId)
 		{
 			return i+1;
 		}
@@ -272,9 +282,9 @@ PUBLIC uint8 find_dev_model(uint16 tclusterId)
 	}
 	return 255;
 }
-
 /*
  * 获取设备模型
+ *
  */
 
 PUBLIC bool get_dev_model(uint16 tclusterId,sAttr_Model_Array *Model_Array)
@@ -283,7 +293,7 @@ PUBLIC bool get_dev_model(uint16 tclusterId,sAttr_Model_Array *Model_Array)
 	model_position = find_dev_model(tclusterId);
 	if(model_position <= MAX_DEV_MODEL_NUM)
 	{
-		Model_Array = Attr_Model_Array[model_position-1];
+		*Model_Array = Attr_Model_Array[model_position-1];
 		return TRUE;
 	}
 
@@ -334,7 +344,6 @@ PUBLIC void vVerifyIASCIELoad(uint8 u8SourceEndpoint)
 
    }
 
-   //协调器的内存完成
 }
 
 

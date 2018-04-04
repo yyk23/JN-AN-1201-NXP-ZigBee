@@ -86,7 +86,8 @@ app_zcl_CIE_task.o: \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_zone_client.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/appZdpExtraction.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PDM_IDs.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_save.h
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_save.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
 
@@ -261,3 +262,5 @@ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Utilities/Include/appZdpE
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PDM_IDs.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_save.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:

@@ -183,6 +183,7 @@ typedef union {
  * 结构体定义
  */
 typedef struct{
+	uint16 u16ASeq; //异步事件标识号
 	uint16 u16FSeq;
 	uint8  u8CType;
 	uint8  u8FrType;

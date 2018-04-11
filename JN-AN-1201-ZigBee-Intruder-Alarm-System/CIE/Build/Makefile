@@ -128,7 +128,8 @@ APPSRC += zps_gen.c
 APPSRC += app_timer_driver.c
 APPSRC += app_exceptions.c
 APPSRC += app_pdm.c
-
+APPSRC += ZQueue.c
+APPSRC += Array_list.c
 APPSRC += haEzJoin.c
 APPSRC += app_zbp_utilities.c
 APPSRC += app_buttons.c
@@ -139,12 +140,10 @@ APPSRC += app_CIE_save.c
 APPSRC += app_start_CIE.c
 APPSRC += zha_CIE_node.c
 APPSRC += app_CIE_uart.c
-APPSRC += ZQueue.c
 APPSRC += app_zcl_CIE_task.c
 APPSRC += app_data_handle.c
 APPSRC += app_cmd_handle.c
 APPSRC += app_data_save_handle.c
-APPSRC += Array_list.c
 APP_ZPSCFG = app.zpscfg
 
 

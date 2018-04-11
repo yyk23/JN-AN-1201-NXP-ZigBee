@@ -83,7 +83,10 @@ app_data_handle.o: \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PDM_IDs.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASZone.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
 
@@ -252,3 +255,9 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASZone.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/Array_list.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/app_events.h:

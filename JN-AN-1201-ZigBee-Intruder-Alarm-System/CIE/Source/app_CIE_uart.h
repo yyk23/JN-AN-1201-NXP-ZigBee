@@ -57,6 +57,12 @@
 #define MAX_DEV_MANAGE_NUM             20
 #define FRAME_SEQ_MAX_NUM              5
 
+#define HV_LOGO                       0x48
+
+#define YCL_LENGTH                    12
+#define HV_LENGTH                     11
+#define SV_LENGTH                     10
+
 #pragma pack(1)    //按照1字节对齐,指明对齐方式
 
 typedef enum
@@ -125,18 +131,18 @@ typedef enum
 	CJP_FTYPE_ERROR     =0x03
 
 } CJP_Status;
+
 typedef  union {
        uint8 YCL_Array[4];
-       uint32 YCL_ID;
+       uint32 u32YCL_ID;
 }uYclID;
 
  typedef  union {
-        uint8 YCL_Array[13];
+        uint8 YCL_Array[12];
         struct {
-        	uint8  Num;
         	uYclID YCL_ID;
         	uint64 Mac;
-        };
+        }sYCL;
 }uYcl;
 
 //链接密钥的定义
@@ -145,33 +151,31 @@ typedef  union {
        struct {
     	   	   uYcl    LinkKey_YCL;
        	       uint32  LinkKey_Last4By;
-       };
+       }sLinkkey;
 }usLinkKey;
 
 typedef  union {
-	uint8 Sv_Array[11];
+	uint8 Sv_Array[10];
 	struct {
-		uint8 Sv_Num;
 		uint32 Sv_YCL_ID;
 		uint8 Sv_Mainv_Num;
 		uint8 Sv_Secv_Num;
 		uint8 Sv_Modv_Num;
 		uint8 Sv_Dev_Date[3];
-	};
+	}sSoft_Ver;
 
 }uSoft_Ver;//软件版本
 
 typedef  union {
-	uint8 Hv_Array[12];
+	uint8 Hv_Array[11];
 	struct {
-		uint8 Hv_Num;
 		uint8 Hv_Logo;
 		uint32 Hv_YCL_ID;
 		uint16 Hv_TecPro;
-		uint16 Hv_Dev_Date[2];
+		uint8 Hv_Dev_Date[2];
 		uint8  Hv_Dev_Company;
 		uint8  Hv_Prod_Ser;
-	};
+	}sHard_Ver;
 }uHard_Ver;//硬件版本
 
 
@@ -187,7 +191,7 @@ typedef struct{
 	uint16 u16FSeq;
 	uint8  u8CType;
 	uint8  u8FrType;
-	uint64 u64Mac;
+	uYcl   Ycl;
 	uint8  u8EPAddr;
 	uint16 u16ProfileID;
 	uint16 u16ClusterID;
@@ -230,6 +234,12 @@ typedef struct{
 	uint8 model_full_flag;
 	uint8 model_memory_manage; //管理8个数据包
 }sCoor_Dev_manage;//协调器的整体设备管理和存储信息
+
+typedef struct{
+	uint8 data_type;
+	uint32 Offsetlength;
+	uint8 datalenth;
+}sAttr_Charact;
 
 
 typedef  teZCL_ZCLAttributeType  CJP_DataType;

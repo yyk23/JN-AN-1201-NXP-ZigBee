@@ -6,7 +6,7 @@
 #
 # COMPONENT:      os_irq.s
 #
-# DATE:           Thu Mar 22 16:25:52 2018
+# DATE:           Tue Apr 10 11:09:21 2018
 #
 # AUTHOR:         Jennic RTOS Configuration Tool
 #

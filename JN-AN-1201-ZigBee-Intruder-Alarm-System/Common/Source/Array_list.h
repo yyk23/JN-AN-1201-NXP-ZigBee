@@ -23,16 +23,16 @@ typedef struct {
     uint8 size;      //数组的最大容量
 }sarrayList;
 
-extern sarrayList alist;
-bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize ,uint8 num);
-void DeleteArray(sarrayList  * alist);
-bool IsEmpty(sarrayList * alist);
-uint8 ArrayLength(sarrayList *alist);
-bool GetElem(sarrayList* alist,uint8 index,ElemType *e);
-void PrintfArray(sarrayList *alist);
-uint8 LocateElem(sarrayList *alist,uYcl ycl);
-bool AddElem(sarrayList *alist,ElemType e);
-bool DelElem(sarrayList *alist,uint8 index);
+extern sarrayList Galist;
+PUBLIC bool Array_init(sarrayList *alist,ElemType * arrayhead , uint8 totalsize ,uint8 num);
+PUBLIC void DeleteArray(sarrayList  * alist);
+PUBLIC bool IsEmpty(sarrayList * alist);
+PUBLIC uint8 ArrayLength(sarrayList *alist);
+PUBLIC bool GetElem(sarrayList* alist,uint8 index,ElemType *e);
+PUBLIC void PrintfArray(sarrayList *alist);
+PUBLIC uint8 LocateElem(sarrayList *alist,uYcl ycl);
+PUBLIC bool AddElem(sarrayList *alist,ElemType e);
+PUBLIC bool DelElem(sarrayList *alist,uint8 index);
 
 
 #endif /* ARRAY_LIST_H_ */

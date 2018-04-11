@@ -321,6 +321,7 @@ PRIVATE  void vHandleStackEvent( ZPS_tsAfEvent sStackEvent )
 
         case ZPS_EVENT_NWK_NEW_NODE_HAS_JOINED:
         	//新设备入网
+
         	ZPS_eAplZdoPermitJoining(0x00);//关闭入网许可
         	/*
         	sStackEvent.uEvent.sNwkJoinIndicationEvent.u16NwkAddr

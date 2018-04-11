@@ -25,13 +25,8 @@ typedef struct{
 	uYcl M_YCL;
 	uSoft_Ver  M_Soft_Ver;
 	uHard_Ver  M_Hard_ver;
-	uYcl  S_YCL;
 	uSoft_Ver  S_Soft_Ver;
-	uHard_Ver  S_Hard_ver;
-	uint16     ProfileID;
-	uint16     ClusterID;
 	uint16     HeartCyc;
-
 }sDevJoin_Notice;
 
 
@@ -39,7 +34,6 @@ typedef struct{
 
 	uYcl        C_YCL;
 	uSoft_Ver   C_Sofe_Ver;
-
 }sReadCoorInf_Resp;
 
 
@@ -47,11 +41,7 @@ typedef struct{
 	uYcl M_YCL;
 	uSoft_Ver  M_Soft_Ver;
 	uHard_Ver  M_Hard_ver;
-	uYcl  S_YCL;
 	uSoft_Ver  S_Soft_Ver;
-	uHard_Ver  S_Hard_ver;
-	uint16     ProfileID;
-	uint16     ClusterID;
 	uint16     HeartCyc;
 
 }sReadDevInf_Resp;
@@ -66,9 +56,14 @@ typedef union{
 }uCJP_Coor_Message;
 
 
+
+
 PUBLIC usLinkKey Linkkey_Calculate(uYcl Ycl);
 
-
+PUBLIC uint8 AttrID_Zigbee_to_CJP(uint16 clusterid , uint16 attrid);
+PUBLIC uint16 AttrID_CJP_to_Zigbee(uYcl ycl , uint8 attrid);
+PUBLIC uint16 ClusterID_Search(uYcl ycl);
+PUBLIC uint8  test1(void);
 #pragma pack()    //按照1字节对齐结束
 
 #endif /* APP_DATA_HANDLE_H_ */

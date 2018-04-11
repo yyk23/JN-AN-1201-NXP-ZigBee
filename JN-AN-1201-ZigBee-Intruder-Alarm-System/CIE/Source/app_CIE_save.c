@@ -173,10 +173,10 @@ PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf)
 	{
 		return FALSE;
 	}
-	dev_place = LocateElem(&alist, BasicInf.ycl);
-	if(dev_place==255)//检查是否存在要添加的设备
+	dev_place = LocateElem(&Galist, BasicInf.ycl);
+	if(dev_place==0)//检查是否存在要添加的设备
 	{
-		AddElem( &alist, BasicInf);
+		AddElem( &Galist, BasicInf);
 		Coor_Dev_manage.dev_num++;
 		if(Coor_Dev_manage.model_num>=MAX_DEV_MANAGE_NUM)
 		{
@@ -186,7 +186,7 @@ PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf)
 	}
 	else
 	{
-		Coor_Dev_manage.dev_num = alist.current_num;//同步一下
+		Coor_Dev_manage.dev_num = Galist.current_num;//同步一下
 	}
 
 	PDM_eSaveRecordData( 		PDM_ID_CIE_END_DEV_TABLE,
@@ -209,15 +209,15 @@ PUBLIC bool add_dev_data_manage(sEnddev_BasicInf  BasicInf)
 PUBLIC bool dele_dev_data_manage(uYcl ycl)
 {
 	uint8 dev_place;
-	dev_place = LocateElem(&alist, Enddev_BasicInf->ycl);
-	if(dev_place==255)
+	dev_place = LocateElem(&Galist, Enddev_BasicInf->ycl);
+	if(dev_place==0)
 	{
 		return FALSE;
 	}
-	DelElem(&alist,dev_place);
+	DelElem(&Galist,dev_place);
 	Coor_Dev_manage.dev_num--;
 	Coor_Dev_manage.dev_full_flag = 0;
-	Coor_Dev_manage.dev_num = alist.current_num;
+	Coor_Dev_manage.dev_num = Galist.current_num;
 	PDM_eSaveRecordData( 		PDM_ID_CIE_END_DEV_TABLE,
 		                        &Enddev_BasicInf[0],
 		                        sizeof(sEnddev_BasicInf) * MAX_DEV_MANAGE_NUM);

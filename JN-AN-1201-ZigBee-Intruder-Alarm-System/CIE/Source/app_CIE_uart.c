@@ -109,7 +109,7 @@ PUBLIC void Uart_Task_Init(void)
   ZQ_vQueueCreate ( &APP_msgSerialRx, UART_RX_MAX_NUM  , sizeof ( uint8 ), (uint8*)Uart_SRxQueue );//初始化串口接收队列
   ZQ_vQueueCreate ( &APP_msgframe, FRAME_SEQ_MAX_NUM  , sizeof  ( uint16 ), (uint8*)Frame_SeqQueue );//初始化CJP 协议的帧序列号
   CIE_data_Init();
-  Array_init(&alist,Enddev_BasicInf , MAX_DEV_MANAGE_NUM ,Coor_Dev_manage.dev_num);//初始化设备列表
+  Array_init(&Galist,Enddev_BasicInf , MAX_DEV_MANAGE_NUM ,Coor_Dev_manage.dev_num);//初始化设备列表
 }
 /*
  * 串口初始化函数
@@ -150,15 +150,14 @@ PUBLIC void User_Uart_Init(void)
 
 static void CIE_data_Init(void)
 {
-	CIE_Ycl.Num = 13;
-	CIE_Ycl.Mac = ZPS_u64AplZdoGetIeeeAddr();
-	CIE_Ycl.YCL_ID.YCL_ID = COOR_YCL_ID;
-	CIE_soft_ver.Sv_YCL_ID = COOR_YCL_ID;
-	CIE_soft_ver.Sv_Num=11;
-	CIE_soft_ver.Sv_Mainv_Num = 0;
-	CIE_soft_ver.Sv_Modv_Num = 0;
-	CIE_soft_ver.Sv_Secv_Num =0;
-	CIE_soft_ver.Sv_Dev_Date[0] =0;
+	CIE_Ycl.sYCL.Mac = ZPS_u64AplZdoGetIeeeAddr();
+	CIE_Ycl.sYCL.YCL_ID.u32YCL_ID = COOR_YCL_ID;
+	CIE_soft_ver.sSoft_Ver.Sv_YCL_ID = COOR_YCL_ID;
+	CIE_soft_ver.sSoft_Ver.Sv_Mainv_Num = 0;
+	CIE_soft_ver.sSoft_Ver.Sv_Modv_Num = 0;
+	CIE_soft_ver.sSoft_Ver.Sv_Secv_Num =0;
+	CIE_soft_ver.sSoft_Ver.Sv_Dev_Date[0] =0;
+	CIE_soft_ver.sSoft_Ver.Sv_Dev_Date[1] =0;
 }
 
 /*
@@ -362,8 +361,10 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 {
   uint8 *p_deal_buf=rx_buf;
   sCJP_Head *   CJP_Head;
+  uYcl  tycl;
   uint8 *p_data_head=rx_buf + CJP_HEAD_LEN;
   CJP_Head=(sCJP_Head *)p_deal_buf;
+  tycl = CJP_Head->Ycl;
 
   if(Frame_Seq==CJP_Head->u16FSeq)
   {
@@ -384,14 +385,14 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  		  //暂时没用
 	  		  break;
 	  	  case CJP_END_READ_ATTR_REQ:
-	  		return( fEnd_Read_AttrsReq( CJP_Head->u64Mac , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
+	  		return( fEnd_Read_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
 	  		  break;
 	  	  case CJP_END_WRITE_ATTR_REQ:
-	  		return (fEnd_Write_AttrsReq( CJP_Head->u64Mac , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
+	  		return (fEnd_Write_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
 	  		  break;
 	  	  case CJP_END_ALARM_DATA_REPORT_RESP:
 	  		  //查看报警回执
-	  		return (fEnd_Alarm_ReportResp( CJP_Head->u64Mac , CJP_Head->u16ClusterID ,CJP_Head->u8DataLen , p_data_head ) );
+	  		return (fEnd_Alarm_ReportResp( CJP_Head->Ycl , CJP_Head->u16ClusterID ,CJP_Head->u8DataLen , p_data_head ) );
 	  		  break;
 
 	  	  default :
@@ -423,11 +424,10 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  		  fJoinNet_Set(*(uint8 *)(p_data_head+2));
 	  		  break;
 	  	  case CJP_DEL_DEV_REQ:
-	  		  fDel_Dev(*(uint64 *)(p_data_head+2));
-	  		//ZPS_eAplZdoLeaveNetwork(0,FALSE,FALSE);//地址
+	  		  fDel_Dev(*(uYcl *)(p_data_head+2));
 	  		break;
 	  	  case CJP_DEV_JOIN_REQ:
-	  		  fDev_Join(*(uYcl *)(p_data_head+2));
+	  		  fDev_Join(*(uYcl *)(p_data_head+3));
 	  		  break;
 	  	  case CJP_RESET_DEF_SET_REQ:
 	  		  fReset_Def_Set();
@@ -436,7 +436,7 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  		 fRead_Coor_inf();
 	  		  break;
 	  	  case CJP_READ_END_DEV_INF_REQ:
-	  		  fRead_End_inf(CJP_Head->u64Mac);
+	  		 fRead_End_inf(tycl);
 	  		  break;
 	  	  case CJP_COOR_SELF_TEST_REQ:
 	  		  fCoor_Self_Test();

@@ -99,7 +99,7 @@
     <Clusters Name="ONOFF" Id="0x0006"/>
   </Profiles>
   <Coordinator Name="CIE" DiscoveryNeighbourTableSize="16" ActiveNeighbourTableSize="26" RouteDiscoveryTableSize="2" RoutingTableSize="100" BroadcastTransactionTableSize="9" RouteRecordTableSize="1" AddressMapTableSize="10" SecurityMaterialSets="2" MaxNumSimultaneousApsdeReq="4" MaxNumSimultaneousApsdeAckReq="4" MACMutexName="mutexMAC" ZPSMutexName="mutexZPS" FragmentationMaxNumSimulRx="4" FragmentationMaxNumSimulTx="4" DefaultEventMessageName="APP_msgZpsEvents" MACDcfmIndMessage="zps_msgDcfmInd" MACTimeEventMessage="zps_msgTimeEvents" apsNonMemberRadius="2" apsDesignatedCoordinator="true" apsUseInsecureJoin="true" apsMaxWindowSize="8" apsInterframeDelay="10" APSDuplicateTableSize="5" apsSecurityTimeoutPeriod="3000" apsUseExtPANId="0x0000000000000000" SecurityEnabled="false" MACMlmeDcfmIndMessage="zps_msgMlmeDcfmInd" MACMcpsDcfmIndMessage="zps_msgMcpsDcfmInd" APSPersistenceTime="100" NumAPSMESimulCommands="4" StackProfile="2" InterPAN="true" GreenPowerSupport="true" NwkFcSaveCountBitShift="10" ApsFcSaveCountBitShift="10" MacTableSize="20" DefaultCallbackName="APP_vGenCallback" PermitJoiningTime="255" ChildTableSize="10">
-    <Endpoints Id="0" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="ZDP" Name="ZDO">
+    <Endpoints Id="0" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="ZDP" Message="" Name="ZDO">
       <InputClusters Cluster="NWK_addr_req" RxAPDU="CIE->apduZDP" Discoverable="false"/>
       <InputClusters Cluster="IEEE_addr_req" RxAPDU="CIE->apduZDP" Discoverable="false"/>
       <InputClusters Cluster="Node_Desc_req" RxAPDU="CIE->apduZDP" Discoverable="false"/>

@@ -41,12 +41,12 @@
 
 
 
-uint8 sdata[50];
 PUBLIC CJP_Status fCJP_Tx_Coor(uYcl ycl ,CJP_CmdID cmd_coor , uint8 *pdata , uint8 len)
 {
 	sCJP_Head *   CJP_Head;
 	CJP_Status    status;
 	CJP_Head=(sCJP_Head *)Uart_STxBuf ;
+	CJP_Head->u16ASeq = AFrame_Seq;
 	CJP_Head->u16FSeq = Frame_Seq ;
 	CJP_Head->u8CType = C_ZIGBEE_DEV ;
 	if((cmd_coor>=0x00) && (cmd_coor<=0x80))
@@ -71,7 +71,6 @@ PUBLIC CJP_Status fCJP_Tx_Coor(uYcl ycl ,CJP_CmdID cmd_coor , uint8 *pdata , uin
 		status=CJP_TxData(CJP_HEAD_LEN+len);
 
 	return status ;
-
 }
 
 
@@ -87,9 +86,19 @@ PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid)
 	else
 		sdata[2] = CJP_SUCCESS;
 
+
+	DBG_vPrintf(TRACE_APP_UART, "%02x",channel );
+	DBG_vPrintf(TRACE_APP_UART, "%04x",panid );
+
+
 	status=fCJP_Tx_Coor(CIE_Ycl, CJP_BUILD_NET_RESP, sdata , 3);
 	//开始建网
-	ZPS_eAplZdoStartStack();
+	if((ZPS_u16AplZdoGetNetworkPanId()!=panid) || (ZPS_u8AplZdoGetRadioChannel()!=channel))
+	{
+		ZPS_eAplAibSetApsChannelMask (1<<channel);//设置信道
+		ZPS_eAplZdoStartStack();
+	}
+
 	return status;
 
 }
@@ -116,6 +125,7 @@ PUBLIC void fBuildNet_Notice(CJP_Status status)
 	sdata[i] = E_ZCL_UINT8;
 	i++;
 
+	Frame_Seq++;//主动发送的序列号+1
 	fCJP_Tx_Coor(CIE_Ycl, CJP_BUILD_NET_NOTICE, sdata , i);
 }
 
@@ -163,7 +173,8 @@ PUBLIC CJP_Status fDel_Dev(uYcl ycl)
 		ZPS_bAplZdoTrustCenterRemoveDevice(ycl.sYCL.Mac);//从信任中心移除设备信息
 		ZPS_vRemoveMacTableEntry(ycl.sYCL.Mac); //在MAC地址表中移除设备
 	}
-
+	DBG_vPrintf(TRACE_APP_UART, "Deleting device's YCL is\n");
+	printf_array(&ycl, sizeof(ycl));
 	return fCJP_Tx_Coor( CIE_Ycl,CJP_DEL_DEV_RESP , sdata , i);
 
 }
@@ -178,7 +189,8 @@ PUBLIC CJP_Status fDev_Join(uYcl ycl)
 	linkkey_tmp = Linkkey_Calculate(ycl);//计算链接密钥
 	ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&linkkey_tmp, 0x00, ZPS_APS_GLOBAL_LINK_KEY);//设置链接密钥
 	ZPS_eAplZdoPermitJoining(PERMIT_JOIN_TIME);
-
+	DBG_vPrintf(TRACE_APP_UART, "Adding device's YCL is\n");
+	printf_array(&ycl, sizeof(ycl));
 	return CJP_SUCCESS;
 }
 
@@ -222,7 +234,7 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 	uYcl tycl=ycl;
 	sEnddev_BasicInf tEnddev_BasicInf ;
 	sReadDevInf_Resp ReadDevInf_Resp;
-
+	uint8 sdata[50];
 	sAttr_Charact tAttr_Charact[5]={
 			{E_ZCL_OSTRING , (uint32)(&((sReadDevInf_Resp*)(0))->M_YCL), YCL_LENGTH},
 			{E_ZCL_OSTRING , (uint32)(&((sReadDevInf_Resp*)(0))->M_Soft_Ver) , SV_LENGTH},
@@ -231,6 +243,8 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 			{E_ZCL_UINT16 , (uint32)(&((sReadDevInf_Resp*)(0))->HeartCyc) , 2}
 	};
 
+	DBG_vPrintf(TRACE_APP_UART, "reading information End device's YCL is\n");
+	printf_array(&ycl, sizeof(ycl));
 	if(ZPS_u16AplZdoLookupAddr(ycl.sYCL.Mac)==0x0000){
 		return  CJP_ERROR;
 	}
@@ -247,11 +261,11 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 	}
 	ReadDevInf_Resp.M_YCL = ycl;
 	ReadDevInf_Resp.M_Soft_Ver.sSoft_Ver.Sv_YCL_ID = ycl.sYCL.YCL_ID.u32YCL_ID;
-	ReadDevInf_Resp.M_Soft_Ver.sSoft_Ver.Sv_Mainv_Num =(uint8)tEnddev_BasicInf.Msoftver>>8;
+	ReadDevInf_Resp.M_Soft_Ver.sSoft_Ver.Sv_Mainv_Num =(uint8)(tEnddev_BasicInf.Msoftver>>8);
 	ReadDevInf_Resp.M_Soft_Ver.sSoft_Ver.Sv_Secv_Num = (uint8)tEnddev_BasicInf.Msoftver;
 
 	ReadDevInf_Resp.S_Soft_Ver.sSoft_Ver.Sv_YCL_ID = ycl.sYCL.YCL_ID.u32YCL_ID;
-	ReadDevInf_Resp.S_Soft_Ver.sSoft_Ver.Sv_Mainv_Num = (uint8)tEnddev_BasicInf.Ssoftver>>8;
+	ReadDevInf_Resp.S_Soft_Ver.sSoft_Ver.Sv_Mainv_Num = (uint8)(tEnddev_BasicInf.Ssoftver>>8);
 	ReadDevInf_Resp.S_Soft_Ver.sSoft_Ver.Sv_Secv_Num = (uint8)tEnddev_BasicInf.Ssoftver;
 
 	ReadDevInf_Resp.M_Hard_ver.sHard_Ver.Hv_Logo = HV_LOGO;
@@ -265,6 +279,90 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 
 	return fCJP_Tx_Coor(CIE_Ycl , CJP_READ_END_DEV_INF_RESP , sdata , len);
 
+}
+
+
+/*协调器上报设备的列表包换设备的基本信息
+ * 指令ID=0x16
+ *
+ */
+#define MAX_DEV_INF_NUM    10
+PUBLIC CJP_Status fReport_End_Dev_List(void)
+{
+	uint8 sdata[160],len=0,i=0,k=0,frame_num=0,frame_seq=0;
+	sEnddev_BasicInf tEnddev_BasicInf;
+	uint8 *p=NULL;
+	if(Coor_Dev_manage.dev_num == 0)
+	{
+		return CJP_SUCCESS;
+	}
+	frame_num=Coor_Dev_manage.dev_num/10+1;//根据设备总数算出需要发送多少帧数据
+	frame_seq=1;
+	p=sdata;
+	len=3;
+	for(i=0;i<Coor_Dev_manage.dev_num;i++)
+	{
+		if(!GetElem(&Galist , i , &tEnddev_BasicInf))
+		{
+			return CJP_ERROR;
+		}
+		memcpy( p+len,  &tEnddev_BasicInf.ycl , sizeof(uYcl));
+		len+=sizeof(uYcl);
+		memcpy(p+len,&tEnddev_BasicInf.hearttime ,sizeof(uint16));
+		len+=sizeof(uint16);
+		if(k>=(MAX_DEV_INF_NUM-1))
+		{
+			sdata[0]=k;
+			sdata[1]=frame_seq;
+			sdata[2]=frame_num;
+			fCJP_Tx_Coor(CIE_Ycl , CJP_REPORT_END_DEV_LIST_REQ , sdata , len);
+			len=3;
+			frame_seq++;
+			k=0;
+		}
+		else
+		{
+			k++;
+		}
+
+	}
+	sdata[0]=k;
+	sdata[1]=frame_seq;
+	sdata[2]=frame_num;
+	fCJP_Tx_Coor(CIE_Ycl , CJP_REPORT_END_DEV_LIST_REQ , sdata , len);
+	return CJP_SUCCESS;
+}
+
+
+/*
+ * 通知JNI层终端设备的心跳时间更改
+ * 指令ID=0x17
+ */
+PUBLIC CJP_Status fUpdate_End_Dev_Hearttime_Notice(uYcl ycl)
+{
+	sEnd_Hearttime  tEnd_Hearttime;
+	sEnddev_BasicInf tEnddev_BasicInf;
+	uint8 sdata[20],len=0,place=0;
+	sAttr_Charact tAttr_Charact[2]={
+					{E_ZCL_OSTRING , (uint32)(&((sEnd_Hearttime*)(0))->E_YCL), YCL_LENGTH},
+					{E_ZCL_UINT16 ,  (uint32)(&((sEnd_Hearttime*)(0))->E_Hearttime) , sizeof(uint16)},
+
+	};
+	place = LocateElem(&Galist,ycl);
+	if(place == 0)
+	{
+		return CJP_ERROR;
+	}
+
+	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
+	{
+		return CJP_ERROR;
+	}
+	memcpy(&tEnd_Hearttime.E_YCL,&ycl ,sizeof(uYcl));
+	memcpy(&tEnd_Hearttime.E_Hearttime,&tEnddev_BasicInf.hearttime ,sizeof(uint16));
+	len = fCJP_Attr_Handle(sdata , (uint8 *)&tEnd_Hearttime ,tAttr_Charact );
+	Frame_Seq++;//主动发送的序列号+1
+	return fCJP_Tx_Coor(CIE_Ycl , CJP_UPDATE_END_DEV_HEARTTIME_REQ , sdata , len);
 }
 
 
@@ -302,6 +400,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	//将属性列表按照转换模型转换为Zigbee属性ID
 	//组织数据进行发送
 	uint8 i = 0,place=0;
+	uint16 zattrID=0;
 	uint8 attrsnum=*indata;//读取的属性个数
 	sEnddev_BasicInf tEnddev_BasicInf;
 	sAttr_Model_Array tAttr_Model_Array;
@@ -358,11 +457,17 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 			        		                     &sqen,
 			        		                     E_ZCL_READ_ATTRIBUTES);  //读属性
 		// write payload, attribute at a time
-		for(i=0; i<attrsnum; i++){
-
-			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",(uint16)*(indata+1+i*2));//属性ID
+		for(i=0; i<attrsnum; i++)
+		{
+			zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+1+i*2));
+			if(zattrID==0)
+			{
+				return CJP_ERROR;
+			}
+			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h", zattrID);//属性ID
 		}
-		   PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+
+		PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 		ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
 	}
 	return CJP_SUCCESS;
@@ -381,6 +486,8 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 {
 	uint8 i = 0, j = 0 ,u8stringlen=0, type_addr_offset=0;
 	uint8 attrsnum = *indata;
+	uint16 zattrID=0;
+	sAttr_Model_Array tAttr_Model_Array;
 	ZPS_tsAfProfileDataReq psProfileDataReq1;
 	static uint8 sqen=1;
 	volatile uint16 u16PayloadSize=0;
@@ -421,7 +528,12 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 	}
 	for(i=0 ; i<(attrsnum/2) ; i++){
 		//属性ID
-		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",(uint16)*(indata+1+1+type_addr_offset));//属性ID
+		zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+1+1+type_addr_offset));
+		if(zattrID==0)
+		{
+			return CJP_ERROR;
+		}
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h", zattrID);//zigbee属性ID
 		//属性数据类型
 		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+1+1+1+type_addr_offset));//属性ID
 		//属性值

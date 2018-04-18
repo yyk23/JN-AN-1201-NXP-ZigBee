@@ -54,8 +54,11 @@
 #include "app_common.h"
 #include "app_events.h"
 #include "app_zone_client.h"
-
 #include "app_CIE_save.h"
+#include "app_cmd_handle.h"
+#include "app_data_handle.h"
+#include "Array_list.h"
+#include "app_CIE_uart.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
@@ -95,6 +98,8 @@ PRIVATE void vAPP_ZCL_DeviceSpecific_Init(void);
 uint8 u8LastPanelStatus = E_CLD_IASACE_PANEL_STATUS_PANEL_DISARMED;
 uint8 u8PanelStatusB4NotReadyToArm = E_CLD_IASACE_PANEL_STATUS_PANEL_DISARMED;
 uint8 u8ConfigFlag = 0;
+static uint8 u8LinkTxBuffer[200];
+static uint8 u8cjpTxBuffer[200];
 /****************************************************************************/
 /***        Local Variables                                               ***/
 /****************************************************************************/
@@ -267,8 +272,14 @@ PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
 
-    DBG_vPrintf(TRACE_ZCL, "\nEntering cbZCL_EndpointCallback");
-
+    DBG_vPrintf(TRACE_ZCL, "\nEntering cbZCL_Endpoint 1 Callback");
+    uYcl tycl;
+    uint16 tclusterID;
+    uint16 tattrID;
+    static uint16 u16Length=0;
+    static eZCL_Frametype ZCL_Frametype=0;
+    static uint8 cjp_commandID=0;
+    static uint8 tattr_num =0;
     switch (psEvent->eEventType)
     {
 
@@ -282,29 +293,36 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         /* DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Unhandled event");*/
         break;
 
-        //收到上报attribute，对每一个attribute产生一个此消息，
+        //收到上报attribute，对每一个attribute产生一个此消息.
+        //上报多个属性、写入属性回复、读取属性回复时，每解析一个属性就会执行这个地方，当一帧数据的所有属性全部解析完毕以后就会调用，E_ZCL_CBET_REPORT_ATTRIBUTES。
+    case E_ZCL_CBET_WRITE_ATTRIBUTES_RESPONSE:
+    case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
     case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE:
     {
-               uint16    u16SizeOfAttribute = 0;
-               uint8     u16Elements =  0;
-               uint16    i =  0;
-               DBG_vPrintf(TRACE_ZCL,"E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE shoudao");
-               //属性的数据格式
-               switch ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType )
-               {
-               case(E_ZCL_OSTRING):
-               case(E_ZCL_CSTRING):
-                  if ( psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData != NULL )
-                  {
-                      u16Elements =  ( (uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData ) [ 0 ];
-                  }
-                  else
-                  {
-                      u16Elements   =  0 ;
-                  }
-               break;
-               case(E_ZCL_LOSTRING):
-               case(E_ZCL_LCSTRING):
+    	uint16    u16SizeOfAttribute = 0;
+        uint8     u16Elements =  0;
+        uint16    i =  0;
+        DBG_vPrintf(TRACE_ZCL,"Into E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE ");
+        tycl.sYCL.Mac = psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u64Addr;
+        tclusterID = psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId;
+        tattrID  = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
+
+        //属性的数据格式
+        switch ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType )
+        {
+             case(E_ZCL_OSTRING):
+             case(E_ZCL_CSTRING):
+             	 if ( psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData != NULL )
+             	 {
+             		 u16Elements =  ( (uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData ) [ 0 ];
+             	 }
+             	 else
+             	 {
+             		 u16Elements   =  0 ;
+             	 }
+             	 break;
+              case(E_ZCL_LOSTRING):
+              case(E_ZCL_LCSTRING):
                    if ( psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData != NULL )
                    {
                        u16Elements =  ( (uint16*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData ) [ 0 ];
@@ -317,32 +335,143 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
                default:
                    u16Elements   =  1;
                    break;
-               }
+            }
+        	u16SizeOfAttribute =  APP_u16GetAttributeActualSize ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType, u16Elements );//属性的数据长度
+        	if ( u16SizeOfAttribute !=  0 )
+        	{
+        		tattr_num++;
+        		 //不同的clusterID有不同的组包格式
+        		if(tclusterID == 0x0000)  //basic clusterID
+        		{
+        			if(tattrID == E_CLD_BAS_ATTR_ID_ATTR_SW_TABLE)
+        			{
+        				ZCL_Frametype=E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT;//表明此帧数据传输的是转换模型
+        			}
+        			else
+        			{
+        				ZCL_Frametype = E_ZCL_FRAME_DEV_INF_DATA_REPORT;//表明此帧数据传输的是设备基本信息
+        			}
+
+        		}
+        		else if(tclusterID == 0x0019) //OTA
+        		{
+                    break;
+        		}
+        		else  //其他所有的clusterID
+        		{
+        			if(tattrID == E_CLD_COMMON_ATTR_ID_DEV_STATUS)
+        			{
+        				if(*( ( uint8* ) psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData) == DEV_STATUS_ALARM)
+        				{
+        					ZCL_Frametype = E_ZCL_FRAME_ALARM_DATA_REPORT; //表明此帧数据传输出的是报警数据
+        					cjp_commandID = CJP_END_ALARM_DATA_REPORT_REQ;
+        				}
+        				else if(*( ( uint8* ) psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData) == DEV_STATUS_HEART_DATA)
+        				{
+        					ZCL_Frametype = E_ZCL_FRAME_HEART_DATA_REPORT; //表明此帧数据传输的是心跳数据
+        					cjp_commandID = CJP_END_HEART_DATA_REPORT_REQ;
+        				}
+        				else
+        				{
+        					ZCL_Frametype = E_ZCL_FRAME_NORMAL_DATA_REPORT; //表明此帧数据传输的是正常数据或普通数据
+        					cjp_commandID = CJP_END_NORMAL_DATA_REPORT_REQ;
+        				}
+        			 }
+
+        		}
+        		if ( u16Elements >0)
+        		{
+
+        			ZNC_BUF_U16_UPD(&u8LinkTxBuffer [u16Length], tclusterID, u16Length) ;//属性ID写入BUF
+        			ZNC_BUF_U8_UPD(&u8LinkTxBuffer [u16Length], psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType, u16Length) ;//属性数据类型写入BUF
+        			if( ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType ==  E_ZCL_OSTRING ) ||
+        					( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType ==  E_ZCL_CSTRING ) )
+        			{
+
+        				tsZCL_OctetString sString = *( ( tsZCL_OctetString* ) psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData );
+        				ZNC_BUF_U8_UPD  ( &u8LinkTxBuffer [u16Length],   sString.u8Length,    u16Length );
+        				for(i=0;i<sString.u8Length;i++)
+        				{
+        					ZNC_BUF_U8_UPD  ( &u8LinkTxBuffer [u16Length],   ( ( uint8* ) sString.pu8Data )[i], u16Length );
+        				}
+        			}
+        			//uint8
+        			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint8) )
+        			{
+        				uint8    u8value =  *( ( uint8* ) psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData );
+        				ZNC_BUF_U8_UPD  ( &u8LinkTxBuffer [u16Length],   u8value,    u16Length );
+        			}
+        			//uint16
+        			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint16) )
+        			{
+        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "h",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				u16Length += sizeof(uint16);
+        			}
+        			//uint32
+        			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint32) )
+        			{
+        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "w",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				u16Length += sizeof(uint32);
+        			}
+        			//uint64
+        			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint64) )
+        			{
+        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "l",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				u16Length += sizeof(uint64);
+        			}
 
 
+        		}
+        	}
 
                /* Send event upwards */
+            if((psEvent->eEventType == E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE))
+            {
+            	ZCL_Frametype = E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE;
+            	cjp_commandID = CJP_END_READ_ATTR_RESP;
+            }
+            else if((psEvent->eEventType == E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE))
+            {
 
+            }
+            else if((psEvent->eEventType == E_ZCL_CBET_WRITE_ATTRIBUTES_RESPONSE))
+            {
+            	ZCL_Frametype = E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE;
+            	cjp_commandID = CJP_END_WRITE_ATTR_RESP;
+            }
 
-               if((psEvent->eEventType == E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE))
-               {
-
-               }
-               else if((psEvent->eEventType == E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE))
-               {
-
-               }
-               else if((psEvent->eEventType == E_ZCL_CBET_WRITE_ATTRIBUTES_RESPONSE))
-               {
-
-               }
-
-           }
-           break;
+          }
+          break;
            //收到已经对单个节点的所有attributes解析完成，生成此消息
     case   E_ZCL_CBET_REPORT_ATTRIBUTES:
+    	//根据接收到的帧类型进行处理
+    	switch(ZCL_Frametype)
+    	{
+    	case E_ZCL_FRAME_DEV_INF_DATA_REPORT: //设备基本信息上报处理
+          fEndDev_BasicInf_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
+    		break;
+    	case E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT://设备转换模型处理
+    		fEndDev_SwModle_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
+    		break;
+    	case E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE:// 设备写属性回复处理
+    		fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+    		break;
+    	case E_ZCL_FRAME_HEART_DATA_REPORT:
+    	case E_ZCL_FRAME_NORMAL_DATA_REPORT:
+    	case E_ZCL_FRAME_ALARM_DATA_REPORT:
+    	case E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE://设备上报属性、读属性回复处理
+    		//数组指针  --  数组有效长度   属性个数  ---   命令ID----
+    		fEndDev_ReportAttr_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+    	break;
+    	default :
+    		break;
 
-    	 DBG_vPrintf(TRACE_ZCL,"E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE");
+    	}
+    	u16Length=0;//开始接收新的一帧数据
+    	ZCL_Frametype = 0;//准备接收新的一帧数据
+    	cjp_commandID = 0;
+    	tattr_num = 0;
+    	DBG_vPrintf(TRACE_ZCL,"E_ZCL_CBET_REPORT_ATTRIBUTES");
     		break;
 
     case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTES_CONFIGURE:
@@ -359,26 +488,10 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         }
         break;
 
-    case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
-        DBG_vPrintf(TRACE_ZCL,"Individual Attribute Read Response for Cluster = %d\n",psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum);
-        if(psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum == SECURITY_AND_SAFETY_CLUSTER_ID_IASZONE)
-        {
-            DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Address = %04x", psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u16Addr);
-            DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Attr = %04x", psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
 
-            vAppUpdateZoneTable(psEvent);
-            PDM_eSaveRecordData( PDM_ID_APP_IASCIE_STRUCT,
-                                 &sDiscovedZoneServers[0],
-                                 sizeof(tsDiscovedZoneServers) * MAX_ZONE_SERVER_NODES);
-        }
-        break;
 
     case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
         /* DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Read attributes response"); */
-        break;
-
-    case E_ZCL_CBET_WRITE_ATTRIBUTES_RESPONSE:
-        vReadAttributes(psEvent);
         break;
 
     case E_ZCL_CBET_READ_REQUEST:
@@ -401,7 +514,9 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         /* DBG_vPrintf(TRACE_ZCL, "\nEP EVT: ZigBee"); */
         break;
 
-        //处理某个Cluster的特定命令，如ON/OFF cluster 中的ON命令，OFF命令
+        /*处理某个Cluster的特定命令，如ON/OFF cluster 中的ON命令，OFF命令
+         * 首先判断是哪一个clusterID，然后判断是哪一个命令，然后调用哪一个函数进行处理
+         */
     case E_ZCL_CBET_CLUSTER_CUSTOM:
         DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Custom Cl %04x\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);
 
@@ -702,9 +817,7 @@ OS_TASK(APP_EntryExitDelay)
                     CIE_EP,
                     E_CLD_IASACE_PANEL_PARAMETER_SECONDS_REMAINING,
                     u8SecondsRemaining);
-           /* PDM_eSaveRecordData( PDM_ID_APP_IASACE_PANEL_PARAM,
-                                 (tsCLD_IASACE_PanelParameter *)&sDevice.sIASACEServerCustomDataStructure.sCLD_IASACE_PanelParameter,
-                                 sizeof(tsCLD_IASACE_PanelParameter));*/
+
         }
         OS_eContinueSWTimer(APP_EntryExitDelayTmr, APP_TIME_MS(1000), NULL );
     }else if((u8SecondsRemaining > 0) &&
@@ -841,6 +954,425 @@ PRIVATE void vAPP_ZCL_DeviceSpecific_Init(void)
     memcpy(sDevice.sBasicServerCluster.au8ManufacturerName, "NXP", CLD_BAS_MANUF_NAME_SIZE);
     memcpy(sDevice.sBasicServerCluster.au8ModelIdentifier, "ZHA-CIE", CLD_BAS_MODEL_ID_SIZE);
     memcpy(sDevice.sBasicServerCluster.au8DateCode, "20150112", CLD_BAS_DATE_SIZE);
+}
+
+
+
+/*
+ * 处理终端的上报的基本信息函数
+ * mac:终端的MAC地址
+ * clusterID:clusterID
+ * commandID :CJP 协议的命令ID
+ * sdata :数据指针  里面的数据格式为{属性ID ,数据类型 ,数据  ,属性ID ,数据类型 ,数据  ,.........}
+ * u8attrnum :数组中属性的个数
+ * u16len :数组的长度(字节)
+ */
+PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID , uint8 * sdata , uint8 u8attrnum , uint16 u16len)
+{
+
+	sEnddev_BasicInf tEnddev_BasicInf;
+	sDevJoin_Notice  tDevJoin_Notice;
+	uint16 buflen=0;
+
+
+
+
+	uint8 u8SizeOfAttribute=0;
+
+	uint8 cjp_buflen=0;
+
+	sAttr_Charact tAttr_Charact[6]={
+			    {E_ZCL_UINT8  ,  (uint32)(&((sDevJoin_Notice*)(0))->bJoinType) ,1},
+				{E_ZCL_OSTRING , (uint32)(&((sDevJoin_Notice*)(0))->M_YCL), YCL_LENGTH},
+				{E_ZCL_OSTRING , (uint32)(&((sDevJoin_Notice*)(0))->M_Soft_Ver) , SV_LENGTH},
+				{E_ZCL_OSTRING , (uint32)(&((sDevJoin_Notice*)(0))->M_Hard_ver) , HV_LENGTH},
+				{E_ZCL_OSTRING , (uint32)(&((sDevJoin_Notice*)(0))->S_Soft_Ver) , SV_LENGTH},
+				{E_ZCL_UINT16 ,  (uint32)(&((sDevJoin_Notice*)(0))->HeartCyc) , 2}
+		};
+
+	if(u8attrnum != 6)
+	{
+		return CJP_SUCCESS;
+	}
+	buflen+= 3;
+	if(*(sdata+buflen) != sizeof(uYcl))
+	{
+		return CJP_ERROR;
+	}
+	buflen++;
+	memcpy((uint8 *)&(tDevJoin_Notice.M_YCL),sdata+buflen,sizeof(uYcl));
+	buflen+=sizeof(uYcl);
+
+	buflen+=3;
+	tEnddev_BasicInf.clusterID = BUILD_UINT16(*(sdata+buflen+1), *(sdata+buflen));
+	buflen+=sizeof(uint16);
+
+	buflen+=3;
+	tDevJoin_Notice.HeartCyc= BUILD_UINT16(*(sdata+buflen+1), *(sdata+buflen));
+	buflen+=sizeof(uint16);
+
+	buflen+=3;
+	if(*(sdata+buflen) != sizeof(uSoft_Ver))
+	{
+		return CJP_ERROR;
+	}
+	buflen++;
+	memcpy((uint8 *)&(tDevJoin_Notice.M_Soft_Ver),sdata+buflen,sizeof(uSoft_Ver));
+	buflen+=sizeof(uSoft_Ver);
+
+	buflen+=3;
+	if(*(sdata+buflen) != sizeof(uHard_Ver))
+	{
+		return CJP_ERROR;
+	}
+	buflen++;
+	memcpy((uint8 *)&(tDevJoin_Notice.M_Hard_ver),sdata+buflen,sizeof(uHard_Ver));
+	buflen+=sizeof(uHard_Ver);
+
+	buflen+=3;
+	if(*(sdata+buflen) != sizeof(uSoft_Ver))
+	{
+		return CJP_ERROR;
+	}
+	buflen++;
+	memcpy((uint8 *)&(tDevJoin_Notice.S_Soft_Ver),sdata+buflen,sizeof(uSoft_Ver));
+	buflen+=sizeof(uSoft_Ver);
+
+	tEnddev_BasicInf.ycl =tDevJoin_Notice.M_YCL;
+	tEnddev_BasicInf.hearttime =tDevJoin_Notice.HeartCyc;
+	tEnddev_BasicInf.Msoftver = BUILD_UINT16(tDevJoin_Notice.M_Soft_Ver.sSoft_Ver.Sv_Secv_Num , tDevJoin_Notice.M_Soft_Ver.sSoft_Ver.Sv_Mainv_Num );
+	tEnddev_BasicInf.Hardver =tDevJoin_Notice.M_Hard_ver.sHard_Ver.Hv_TecPro ;
+	tEnddev_BasicInf.Ssoftver = BUILD_UINT16(tDevJoin_Notice.S_Soft_Ver.sSoft_Ver.Sv_Secv_Num , tDevJoin_Notice.S_Soft_Ver.sSoft_Ver.Sv_Mainv_Num );
+	tEnddev_BasicInf.Factcode = tDevJoin_Notice.M_Hard_ver.sHard_Ver.Hv_Dev_Company;
+	//在设备列表中添加设备，保存基本信息
+	add_dev_data_manage(tEnddev_BasicInf);
+	//向JNI层发送设备入网通知。
+	Frame_Seq++;
+	cjp_buflen = fCJP_Attr_Handle(&u8cjpTxBuffer[0] , (uint8 *)&tDevJoin_Notice, tAttr_Charact );
+	return fCJP_Tx_Coor(CIE_Ycl , CJP_DEV_JOINED_NOTICE, &u8cjpTxBuffer[0] , cjp_buflen); //通知上层设备添加成功
+
+}
+
+
+
+
+/*
+ * 处理终端的上报的属性模型转换表函数
+ * mac:终端的MAC地址
+ * clusterID:clusterID
+ * commandID :CJP 协议的命令ID
+ * sdata :数据指针  里面的数据格式为{属性ID ,数据类型 ,数据  ,属性ID ,数据类型 ,数据  ,.........}
+ * u8attrnum :数组中属性的个数
+ * u16len :数组的长度(字节)
+ */
+PUBLIC CJP_Status fEndDev_SwModle_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len)
+{
+	sAttr_Model_Array tModel_Array;
+	uint16 tclusterID=0;
+	uint8 cjp_attrnum=0;
+	uint8 len=0,i=0;
+	tclusterID = BUILD_UINT16(*(sdata+4), *(sdata+3));
+
+	len =  *(sdata+8);
+	if((len%3) == 0)
+	{
+		cjp_attrnum = len/3;
+	}
+	else
+	{
+		return CJP_ERROR;
+	}
+	tModel_Array.Attr_Model[0].head.attrnum = cjp_attrnum;
+	tModel_Array.Attr_Model[0].head.clusterID =tclusterID;
+	for(i=0 ; i<cjp_attrnum ;i++)
+	{
+		tModel_Array.Attr_Model[i+1].attr.zattrID = BUILD_UINT16(*(sdata+10+cjp_attrnum*i), *(sdata+9+cjp_attrnum*i));
+		tModel_Array.Attr_Model[i+1].attr.CattrID = *(sdata+11+cjp_attrnum*i);
+	}
+
+	if(add_dev_model_data_manage( tModel_Array))//添加模型
+	{
+	   return CJP_SUCCESS;
+	}
+	return CJP_ERROR;
+}
+
+
+
+/*
+ * 处理终端的写属性回复函数
+ * mac:终端的MAC地址
+ * clusterID:clusterID
+ * commandID :CJP 协议的命令ID
+ * sdata :数据指针  里面的数据格式为{属性ID ,数据类型 ,数据  ,属性ID ,数据类型 ,数据  ,.........}
+ * u8attrnum :数组中属性的个数
+ * u16len :数组的长度(字节)
+ */
+PUBLIC CJP_Status fEndDev_WriteAttr_Resp_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len)
+{
+	sEnddev_BasicInf tEnddev_BasicInf;
+	sAttr_Model_Array tAttr_Model_Array;
+	uint8 place=0;
+	uYcl ycl;
+
+	if(ZPS_u16AplZdoLookupAddr(mac)==0x0000)
+	{
+		return CJP_ERROR;
+	}
+		//进行属性ID的转换处理
+		//在设备列表中查找设备的基本信息
+	place = LocateElem(&Galist,ycl);
+	if(place == 0)
+	{
+		return CJP_ERROR;
+	}
+
+	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
+	{
+		return CJP_ERROR;
+	}
+	if(!get_dev_model(tEnddev_BasicInf.clusterID, &tAttr_Model_Array))
+	{
+		return CJP_ERROR;
+	}
+    //只要能够执行这个函数说明写入已经成功
+	u8cjpTxBuffer[0] = 0x01;
+	u8cjpTxBuffer[1] = E_ZCL_UINT8;
+	u8cjpTxBuffer[2] = CJP_SUCCESS;
+	return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] ,3 );
+
+}
+
+/*
+ * 处理终端的上报属性命令、读取属性回复命令
+ * mac:终端的MAC地址
+ * clusterID:clusterID
+ * commandID :CJP 协议的命令ID
+ * sdata :数据指针  里面的数据格式为{属性ID ,数据类型 ,数据  ,属性ID ,数据类型 ,数据  ,.........}
+ * u8attrnum :数组中属性的个数
+ * u16len :数组的长度(字节)
+ */
+PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len)
+{
+	sEnddev_BasicInf tEnddev_BasicInf;
+	sAttr_Model_Array tAttr_Model_Array;
+	uint16 buflen=0;
+	uint8 i=0;
+	uint8 datatype=0;
+	uint8 place=0;
+	uint16 tattrID=0;
+	uint16 u16Elements=0;
+	uint16 u16SizeOfAttribute=0;
+	uint8 cjp_attrID=0;
+	uint8 cjp_buflen=0;
+	uYcl ycl;
+
+	if(ZPS_u16AplZdoLookupAddr(mac)==0x0000)
+	{
+
+		return CJP_ERROR;
+	}
+	//进行属性ID的转换处理
+	//在设备列表中查找设备的基本信息
+	place = LocateElem(&Galist,ycl);
+	if(place == 0)
+	{
+		return CJP_ERROR;
+	}
+
+	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
+	{
+	    return CJP_ERROR;
+	}
+	if(!get_dev_model(tEnddev_BasicInf.clusterID, &tAttr_Model_Array))
+	{
+	    return CJP_ERROR;
+	}
+	u8cjpTxBuffer[cjp_buflen] = u8attrnum*2;
+	cjp_buflen++;
+	if(u8attrnum !=0)
+	{
+		for(i=0 ; i<u8attrnum ; i++)
+		{
+			if(buflen>=u16len)
+			{
+				return CJP_ERROR;
+			}
+			tattrID = BUILD_UINT16(*(sdata+buflen+1), *(sdata+buflen));
+			buflen += 2;
+			datatype = *(uint8 *)(sdata+buflen);
+			buflen++;
+		//属性的数据格式
+			switch ( datatype)
+			{
+				case(E_ZCL_OSTRING):
+				case(E_ZCL_CSTRING):
+					u16Elements =  ( (uint8*)(sdata+buflen) ) [0]+1;
+					break;
+				default:
+					u16Elements   =  1;
+					break;
+			}
+			u16SizeOfAttribute =  APP_u16GetAttributeActualSize (datatype, u16Elements );//属性的数据长度
+			cjp_attrID = get_CJP_attrID(&tAttr_Model_Array , tattrID);
+			u8cjpTxBuffer[cjp_buflen] = E_ZCL_UINT8;
+			cjp_buflen++;
+			u8cjpTxBuffer[cjp_buflen] = cjp_attrID;
+			cjp_buflen++;
+			u8cjpTxBuffer[cjp_buflen] = datatype;
+			cjp_buflen++;
+			memcpy(&u8cjpTxBuffer[cjp_buflen],sdata+buflen ,u16SizeOfAttribute);
+			cjp_buflen += u16SizeOfAttribute;
+			buflen += u16SizeOfAttribute;
+
+		}
+		if(commandID != E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE)
+		{
+			Frame_Seq++;
+		}
+		return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] , cjp_buflen+1);
+	}
+
+
+	return CJP_ERROR;
+}
+
+
+/*
+ * 将8位、16位、32位、64位整型数据复制到指定的地址上，为什们不直接利用指针进行赋值呢，因为字节对齐问题。
+ */
+PUBLIC uint16 App_u16BufferReadNBO ( uint8         *pu8Struct,
+                                     const char    *szFormat,
+                                     void          *pvData)
+{
+    uint8 *pu8Start = (uint8*)pvData;
+    uint32 u32Offset = 0;
+
+    if(!pu8Struct || !szFormat || !pvData)
+    {
+        return 0;
+    }
+
+    for(; *szFormat != '\0'; szFormat++)
+    {
+        if(*szFormat == 'b') {
+            pu8Struct[u32Offset++] = *(uint8*)pvData++;
+        } else if (*szFormat == 'h') {
+            uint16 u16Val = *( uint8* )pvData++ << 8;
+            u16Val |= *( uint8* )pvData;
+
+            /* align to half-word boundary */
+            u32Offset = ALIGN( sizeof(uint16), u32Offset );
+
+            memcpy(pu8Struct + u32Offset, &u16Val, sizeof(uint16));
+
+            u32Offset += sizeof(uint16);
+        } else if (*szFormat == 'w') {
+            uint32 u32Val = *( uint8* )pvData << 24;
+            u32Val |= *( uint8* )pvData << 16;
+            u32Val |= *( uint8* )pvData << 8;
+            u32Val |= *( uint8* )pvData;
+
+            /* align to word (32 bit) boundary */
+            u32Offset = ALIGN(sizeof(uint32), u32Offset);
+
+            memcpy(pu8Struct + u32Offset, &u32Val, sizeof(uint32));
+
+            u32Offset += sizeof(uint32);
+        } else if (*szFormat == 'l') {
+        	uint64 u64Val;
+            u64Val =  (uint64) *( uint8* )pvData << 56;
+            u64Val |= (uint64) *( uint8* )pvData << 48;
+            u64Val |= (uint64) *( uint8* )pvData << 40;
+            u64Val |= (uint64) *( uint8* )pvData << 32;
+            u64Val |= (uint64) *( uint8* )pvData << 24;
+            u64Val |= (uint64) *( uint8* )pvData << 16;
+            u64Val |= (uint64) *( uint8* )pvData << 8;
+            u64Val |= (uint64) *( uint8* )pvData ;
+
+
+            /*
+             *  align to long long word (64 bit) boundary
+             *  but relative to structure start
+             */
+            u32Offset = ALIGN(sizeof(uint64), u32Offset);
+
+            memcpy(pu8Struct + u32Offset, &u64Val, sizeof(uint64));
+
+            u32Offset += sizeof(uint64);
+
+        } else if (*szFormat == 'a') {
+            uint8 u8Size = *++szFormat;
+            unsigned int i;
+
+            for (i = 0; i < u8Size; i++) {
+                *(pu8Struct + u32Offset) = *( uint8* )pvData;
+                u32Offset++;
+            }
+        } else if (*szFormat == 'p') {
+            pvData += *++szFormat;
+        }
+    }
+
+    return (uint16)((uint8*)pvData - pu8Start);
+}
+
+
+//获取属性数据类型的长度
+PUBLIC uint16 APP_u16GetAttributeActualSize ( uint32    u32Type , uint16    u16NumberOfItems )
+{
+    uint16    u16Size =  0;
+
+    switch(u32Type)
+    {
+        case(E_ZCL_GINT8):
+        case(E_ZCL_UINT8):
+        case(E_ZCL_INT8):
+        case(E_ZCL_ENUM8):
+        case(E_ZCL_BMAP8):
+        case(E_ZCL_BOOL):
+        case(E_ZCL_OSTRING):
+        case(E_ZCL_CSTRING):
+           u16Size = sizeof(uint8);
+        break;
+
+        case(E_ZCL_LOSTRING):
+        case(E_ZCL_LCSTRING):
+        case(E_ZCL_STRUCT):
+        case (E_ZCL_INT16):
+        case (E_ZCL_UINT16):
+        case (E_ZCL_ENUM16):
+        case (E_ZCL_CLUSTER_ID):
+        case (E_ZCL_ATTRIBUTE_ID):
+           u16Size = sizeof(uint16);
+        break;
+
+
+        case E_ZCL_UINT24:
+        case E_ZCL_UINT32:
+        case E_ZCL_TOD:
+        case E_ZCL_DATE:
+        case E_ZCL_UTCT:
+        case E_ZCL_BACNET_OID:
+        case E_ZCL_INT24:
+        case E_ZCL_FLOAT_SINGLE:
+           u16Size = sizeof(uint32);
+        break;
+
+        case E_ZCL_UINT40:
+        case E_ZCL_UINT48:
+        case E_ZCL_UINT56:
+        case E_ZCL_UINT64:
+        case E_ZCL_IEEE_ADDR:
+           u16Size = sizeof(uint64);
+        break;
+
+        default:
+           u16Size = 0;
+        break;
+    }
+
+    return ( u16Size * u16NumberOfItems );
 }
 
 /****************************************************************************/

@@ -44,7 +44,6 @@ PUBLIC bool IsEmpty(sarrayList * alist)
 {
     if(0==alist->current_num)
     {
-
         return TRUE;
     }
     else
@@ -69,7 +68,8 @@ PUBLIC uint8 LocateElem(sarrayList *alist,uYcl ycl)
     for(i=0 ; i<ArrayLength(alist) ; i++)
     {
     	tEnddev_BasicInf = alist->Array[i];
-    	if((tEnddev_BasicInf.ycl.sYCL.Mac == tycl.sYCL.Mac) && (tEnddev_BasicInf.ycl.sYCL.YCL_ID.u32YCL_ID == tycl.sYCL.YCL_ID.u32YCL_ID))
+    	//if((tEnddev_BasicInf.ycl.sYCL.Mac == tycl.sYCL.Mac) && (tEnddev_BasicInf.ycl.sYCL.YCL_ID.u32YCL_ID == tycl.sYCL.YCL_ID.u32YCL_ID))
+    	if(tEnddev_BasicInf.ycl.sYCL.Mac == tycl.sYCL.Mac)//÷ªºÏ≤ÈMACµÿ÷∑
     	{
     		pos = i+1;
     	}

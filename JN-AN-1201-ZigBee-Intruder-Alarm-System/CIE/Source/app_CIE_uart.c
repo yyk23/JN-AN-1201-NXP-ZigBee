@@ -40,12 +40,13 @@
 #include "app_cmd_handle.h"
 #include "app_data_handle.h"
 #include "Array_list.h"
+#include "app_CIE_uart.h"
 
 
-#define TRACE_APP_UART    TRUE
-#define UART_APP_PORT  E_AHI_UART_1
+
+
 #if !defined( UART_APP_BAUD )
-#define UART_APP_BAUD  E_AHI_UART_RATE_9600
+#define UART_APP_BAUD  E_AHI_UART_RATE_115200
 #endif
 
 
@@ -64,9 +65,10 @@
 
 #define UART_DMA_RXBUF_LEN          255
 #define UART_DMA_TXBUF_LEN          255
-
+#pragma pack(1)    //按照1字节对齐,指明对齐方式
 /**/
 uint16 Frame_Seq=0xFFFF;
+uint16 AFrame_Seq=0xFFFF;
 uint8  Uart_STxBuf[UART_TX_MAX_NUM+1];
 uint16 Frame_SeqQueue[FRAME_SEQ_MAX_NUM+1];
 uSoft_Ver CIE_soft_ver;
@@ -90,7 +92,7 @@ static uint8  Uart_SRxBuf[UART_RX_MAX_NUM+1];//
 static uint16 Uart_SRxLen = 0;
 static uint8 s_eUart_state=0;
 
-
+#pragma pack()
 
 /*
  * 内部函数
@@ -185,10 +187,6 @@ OS_TASK(APP_CIE_taskuart)
     if (OS_eGetSWTimerStatus(APP_uart_timeout) == OS_E_SWTIMER_EXPIRED) //
     {
     	Uart_Analysis_Step = UART_RX_NULL;
-    	DBG_vPrintf(TRACE_APP_UART, "uart test");
-    	DBG_vPrintf(TRACE_APP_UART, "uart test %d",CJP_HEAD_LEN);
-    	DBG_vPrintf(TRACE_APP_UART, "uart test %d",100);
-    	DBG_vPrintf(TRACE_APP_UART, "segerm num %d",PDM_u8GetSegmentCapacity());
     	OS_eStopSWTimer (APP_uart_timeout);
     	OS_eStartSWTimer (APP_uart_timeout, APP_TIME_MS(1000), NULL);
 
@@ -235,12 +233,12 @@ PUBLIC void app_UartSendMesg(APP_uartEventType  type)
  */
 static uint16 HalUARTRead(uint8 u8Uart,uint8 *pu8Data,uint16 u16DataLength)
 {
-	uint16 i=0;
+	uint16 i=0,k=u16DataLength;
 	if((u16DataLength>UART_RX_MAX_NUM)||(u16DataLength==0))
 	{
 		return 0;
 	}
-	for(u16DataLength;u16DataLength>0;u16DataLength--)
+	for(k=u16DataLength; k>0 ; k--)
 	{
 
 		if(ZQ_bQueueReceive(&APP_msgSerialRx, pu8Data++ ))//出队
@@ -303,16 +301,16 @@ static void CJP_Analysis(void)
   		  Uart_SRxLen+=rx_buf_num;
   		  if(Uart_SRxLen>=CJP_HEAD_LEN)
   		  {
-  			  vAHI_UartWriteData(UART_APP_PORT,0x02);
+  			  DBG_vPrintf(TRACE_APP_UART, "UART STEP = UART_RX_HEAD\n");
   			  CJP_Head=(sCJP_Head *)Uart_SRxBuf;
   			  if((CJP_Head->u8CType !=C_DEV_TYPE )||(CJP_Head->u8FrType > 1)||(CJP_Head->u8EPAddr !=PORT_NUM)||(CJP_Head->u8DataLen>UART_RX_DATA_MAX_NUM))
   			  {
-  				  vAHI_UartWriteData(UART_APP_PORT,0x03);
+  				  DBG_vPrintf(TRACE_APP_UART, "CJP HEAD ERROR\n");
   				  Uart_Analysis_Step = UART_RX_NULL;
   				  break;
   			  }
   			  Uart_Analysis_Step = UART_RX_DATA;
-  			  vAHI_UartWriteData(UART_APP_PORT,0x04);
+  			  DBG_vPrintf(TRACE_APP_UART, "UART STEP = UART_RX_HEAD\n");
 
   		  }
   		  else
@@ -324,18 +322,17 @@ static void CJP_Analysis(void)
   		  Uart_SRxLen+=rx_buf_num;
   		  if(Uart_SRxLen >= (CJP_Head->u8DataLen + CJP_HEAD_LEN+2))
   		  {
-  			  uint16 crcnum=0;
-  			  crcnum=CRC_Calculate(p_rx_buf, CJP_Head->u8DataLen + CJP_HEAD_LEN);
-  			  vAHI_UartWriteData(UART_APP_PORT,(uint8)(crcnum&0x00FF));
-  			  vAHI_UartWriteData(UART_APP_PORT,(uint8)((crcnum&0xFF00)>>8));
-  			  vAHI_UartWriteData(UART_APP_PORT,0x05);
-  			  if(BUILD_UINT16(*(p_rx_buf+CJP_HEAD_LEN+CJP_Head->u8DataLen),*(p_rx_buf+CJP_HEAD_LEN+CJP_Head->u8DataLen+1))==CRC_Calculate(p_rx_buf, CJP_Head->u8DataLen + CJP_HEAD_LEN))
+  			  DBG_vPrintf(TRACE_APP_UART, "UART CRCING \n");
+  			  if(BUILD_UINT16(*(p_rx_buf+CJP_HEAD_LEN+CJP_Head->u8DataLen+1),*(p_rx_buf+CJP_HEAD_LEN+CJP_Head->u8DataLen))==CRC_Calculate(p_rx_buf, CJP_Head->u8DataLen + CJP_HEAD_LEN))
   			  {
-  				  vAHI_UartWriteData(UART_APP_PORT,0x06);
+  				  DBG_vPrintf(TRACE_APP_UART, "UART CRC SUCCESS \n");
   				  CJP_RxCMDDeal(p_rx_buf);
-  				  CJP_TxCMDData(1, 2 );
   			  }
-  			  vAHI_UartWriteData(UART_APP_PORT,0x07);
+  			  else
+  			  {
+  				DBG_vPrintf(TRACE_APP_UART, "UART CRC ERROR \n");
+  			  }
+  			  DBG_vPrintf(TRACE_APP_UART, "UART HANDLE FINASH \n");
   			  Uart_Analysis_Step = UART_RX_NULL;
   			  break;
 
@@ -364,42 +361,73 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
   uYcl  tycl;
   uint8 *p_data_head=rx_buf + CJP_HEAD_LEN;
   CJP_Head=(sCJP_Head *)p_deal_buf;
-  tycl = CJP_Head->Ycl;
-
+  CJP_Status  tCJPstatus;
+  /*
   if(Frame_Seq==CJP_Head->u16FSeq)
   {
 	  return CJP_ERROR;
-  }
+  }*/
   Frame_Seq=CJP_Head->u16FSeq;
+  AFrame_Seq = CJP_Head->u16ASeq;
+
   /*
    * 和终端的通信数据
    */
+  DBG_vPrintf(TRACE_APP_UART, "UART CmdID = %02x \n", CJP_Head->u8CmdID);
   if(CJP_Head->u8FrType==F_JNI_END)
   {
 	  switch(CJP_Head->u8CmdID)
 	  {
 	  	  case CJP_END_NORMAL_DATA_REPORT_RESP:
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_END_NORMAL_DATA_REPORT_RESP\n");
 	  		 //暂时没用
 	  		  break;
 	  	  case CJP_END_HEART_DATA_REPORT_RESP:
-	  		  //暂时没用
+	  		DBG_vPrintf(TRACE_APP_UART, "CJP_END_HEART_DATA_REPORT_RESP\n");
 	  		  break;
 	  	  case CJP_END_READ_ATTR_REQ:
-	  		return( fEnd_Read_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_END_READ_ATTR_REQ\n");
+	  		  tCJPstatus = fEnd_Read_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head );
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Read attributes success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Read attributes error\n");
+	  		  }
 	  		  break;
 	  	  case CJP_END_WRITE_ATTR_REQ:
-	  		return (fEnd_Write_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) );
-	  		  break;
+	  		 DBG_vPrintf(TRACE_APP_UART, "CJP_END_WRITE_ATTR_REQ\n");
+	  		 tCJPstatus = fEnd_Write_AttrsReq( CJP_Head->Ycl , CJP_Head->u16ClusterID , CJP_Head->u8DataLen , p_data_head ) ;
+	  		 if(tCJPstatus == CJP_SUCCESS)
+	  		 {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Write attributes success\n");
+	  		 }
+	  		 else
+	  		 {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Write attributes error\n");
+	  		 }
+	  		 break;
 	  	  case CJP_END_ALARM_DATA_REPORT_RESP:
+	  		DBG_vPrintf(TRACE_APP_UART, "CJP_END_ALARM_DATA_REPORT_RESP\n");
 	  		  //查看报警回执
-	  		return (fEnd_Alarm_ReportResp( CJP_Head->Ycl , CJP_Head->u16ClusterID ,CJP_Head->u8DataLen , p_data_head ) );
+	  		tCJPstatus = fEnd_Alarm_ReportResp( CJP_Head->Ycl , CJP_Head->u16ClusterID ,CJP_Head->u8DataLen , p_data_head );
+	  		if(tCJPstatus == CJP_SUCCESS)
+	  		{
+	  			DBG_vPrintf(TRACE_APP_UART, "Alarm data report success\n");
+	  		}
+	  		else
+	  		{
+	  			DBG_vPrintf(TRACE_APP_UART, "Alarm data report  error\n");
+	  		}
 	  		  break;
 
 	  	  default :
 	  		  break;
 
 	    }
-	  return CJP_SUCCESS;
+	  return tCJPstatus;
   }
 
 
@@ -413,35 +441,116 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  {
 
 	  	  case CJP_BUILD_NET_REQ:
-	  		  fBuildNet(*(uint8 *)(p_data_head+2),*(uint16 *)(p_data_head+4));
-	  		  break;
-	  	  case CJP_RESET_DEV_REQ:/*复位协调器*/
 	  	  {
+	  		 DBG_vPrintf(TRACE_APP_UART, "CJP_BUILD_NET_REQ\n");
+	  		  //*(uint16*)(p_data_head+4)会引起字节对齐问题。
+	  		tCJPstatus = fBuildNet(*(uint8 *)(p_data_head+2),BUILD_UINT16(*(p_data_head+5),*(p_data_head+4)));
+	  		if(tCJPstatus == CJP_SUCCESS)
+	  		{
+	  			DBG_vPrintf(TRACE_APP_UART, "Build net req success\n");
+	  		}
+	  		else
+	  		{
+	  			DBG_vPrintf(TRACE_APP_UART, "Build net req  error\n");
+	  		}
+
+	  		 break;
+	  	  }
+	  	  case CJP_RESET_DEV_REQ:  /*复位协调器*/
+	  	  {
+	  		DBG_vPrintf(TRACE_APP_UART, "CJP_RESET_DEV_REQ\n");
 	  		vAHI_SwReset();
 	  		break;
 	  	  }
 	  	  case CJP_JOIN_NET_SET_REQ:
-	  		  fJoinNet_Set(*(uint8 *)(p_data_head+2));
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_JOIN_NET_SET_REQ\n");
+	  		  tCJPstatus = fJoinNet_Set(*(p_data_head+2));
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Join net set success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Join net set error\n");
+	  		  }
 	  		  break;
 	  	  case CJP_DEL_DEV_REQ:
-	  		  fDel_Dev(*(uYcl *)(p_data_head+2));
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_DEL_DEV_REQ\n");
+	  		  memcpy((uint8 *)&tycl,p_data_head+3,sizeof(uYcl));
+	  		  tCJPstatus = fDel_Dev(tycl);
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Delete device  success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Delete device error\n");
+	  		  }
 	  		break;
 	  	  case CJP_DEV_JOIN_REQ:
-	  		  fDev_Join(*(uYcl *)(p_data_head+3));
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_DEV_JOIN_REQ\n");
+	  		  memcpy((uint8 *)&tycl,p_data_head+3,sizeof(uYcl));
+	  		  tCJPstatus = fDev_Join(tycl);
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Device join request success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Device join request error\n");
+	  		  }
 	  		  break;
 	  	  case CJP_RESET_DEF_SET_REQ:
-	  		  fReset_Def_Set();
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_RESET_DEF_SET_REQ\n");
+	  		  tCJPstatus = fReset_Def_Set();
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Reset default set success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			  DBG_vPrintf(TRACE_APP_UART, "Reset default set error\n");
+	  		  }
 	  		  break;
 	  	  case CJP_READ_COOR_DEV_INF_REQ:
-	  		 fRead_Coor_inf();
+	  		 DBG_vPrintf(TRACE_APP_UART, "CJP_READ_COOR_DEV_INF_REQ\n");
+	  		 tCJPstatus = fRead_Coor_inf();
+	  		 if(tCJPstatus == CJP_SUCCESS)
+	  		 {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Read coordinator device information success\n");
+	  		 }
+	  		 else
+	  		 {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Read coordinator device information error\n");
+	  		 }
 	  		  break;
 	  	  case CJP_READ_END_DEV_INF_REQ:
-	  		 fRead_End_inf(tycl);
-	  		  break;
+	  		 DBG_vPrintf(TRACE_APP_UART, "CJP_READ_END_DEV_INF_REQ\n");
+	  		 memcpy((uint8 *)&tycl,p_data_head+3,sizeof(uYcl));
+	  		 tCJPstatus = fRead_End_inf(tycl);
+	  		 if(tCJPstatus == CJP_SUCCESS)
+	  		 {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Read end device information success\n");
+	  		 }
+	  		 else
+	  		 {
+	  			DBG_vPrintf(TRACE_APP_UART, "Read end device information error\n");
+	  		 }
+	  		 break;
 	  	  case CJP_COOR_SELF_TEST_REQ:
-	  		  fCoor_Self_Test();
+	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_COOR_SELF_TEST_REQ\n");
+	  		  tCJPstatus = fCoor_Self_Test();
+	  		  if(tCJPstatus == CJP_SUCCESS)
+	  		  {
+	  			DBG_vPrintf(TRACE_APP_UART, "Coordinator test request success\n");
+	  		  }
+	  		  else
+	  		  {
+	  			 DBG_vPrintf(TRACE_APP_UART, "Coordinator test request error\n");
+	  		  }
 	  		  break;
 	  	  default:
+	  		 DBG_vPrintf(TRACE_APP_UART, "Unsupported command\n");
 	  		  break;
 	  }
 
@@ -459,11 +568,15 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 PUBLIC CJP_Status CJP_TxData(uint8 len)
 {
 	uint8 *tx_buf=Uart_STxBuf;
+	uint16 crc_value=0;
 	if(len>UART_TX_MAX_NUM){
 		return CJP_ERROR;
 	}
-	*(uint16 *)(tx_buf+len+CJP_HEAD_LEN)= CRC_Calculate(tx_buf, len+CJP_HEAD_LEN);
-	HalUARTWrite(UART_APP_PORT,tx_buf, len+CJP_HEAD_LEN+2);
+	crc_value= CRC_Calculate(tx_buf, len);
+	*(tx_buf+len) =(uint8) ((crc_value>>8)&0x00FF);
+	*(tx_buf+len+1) =(uint8) (crc_value&0x00FF);
+	HalUARTWrite(UART_APP_PORT,tx_buf, len+2);
+
 	return CJP_SUCCESS ;
 
 }
@@ -497,8 +610,29 @@ static uint16 CRC_Calculate(uint8 *pBuf, uint8 len)
 		da = crc >> 8;  // CRC(h)
 	    crc <<= 8;
 	    crc ^= crc_tab[da ^ *pBuf++];
-	 }
-	 return crc;
+	}
+	return crc;
+}
+
+
+//调试打印数组函数
+PUBLIC void printf_array(uint8 * array , uint8 len)
+{
+
+	uint8 i=0;
+	uint8 *p=array;
+	if(TRACE_APP_UART==TRUE)
+	{
+		DBG_vPrintf(TRACE_APP_UART, "Array[%d]:",len );
+
+		for(i=0; i<len ;i++)
+		{
+			DBG_vPrintf(TRACE_APP_UART, "%02x",*p );
+			p++;
+		}
+		DBG_vPrintf(TRACE_APP_UART, "\n");
+	}
+
 }
 
 

@@ -241,7 +241,7 @@ OS_TASK(APP_taskCIE)
     /*Collect stack Events */
     if ( OS_eCollectMessage(APP_msgZpsEvents, &sStackEvent) == OS_E_OK)
     {
-    	//处理端点0，即处理ZPS的事情
+    	//处理通过ZigBee网络接收到的所有数据
     	 vHandleStackEvent( sStackEvent );
 
     }
@@ -286,19 +286,16 @@ OS_TASK(APP_taskCIE)
  ****************************************************************************/
 PRIVATE  void vHandleStackEvent( ZPS_tsAfEvent sStackEvent )
 {
-
     DBG_vPrintf(TRACE_CIE_NODE, "\nAPP_ZPR_Light_Task event:%d",sStackEvent.eType);
 
     switch (sStackEvent.eType)
     {
-    	//接收到无线发送过来的数据
         case ZPS_EVENT_APS_DATA_INDICATION:
-
             DBG_vPrintf(TRACE_CIE_NODE, "\nData Ind: Profile :%x Cluster :%x EP:%x",
-                sStackEvent.uEvent.sApsDataIndEvent.u16ProfileId,
-                sStackEvent.uEvent.sApsDataIndEvent.u16ClusterId,
-                sStackEvent.uEvent.sApsDataIndEvent.u8DstEndpoint);//目的地址
-            //处理终端的数据
+                                          sStackEvent.uEvent.sApsDataIndEvent.u16ProfileId,
+                                          sStackEvent.uEvent.sApsDataIndEvent.u16ClusterId,
+                                          sStackEvent.uEvent.sApsDataIndEvent.u8DstEndpoint);//目的地址
+
         break;
 
         case ZPS_EVENT_NWK_STATUS_INDICATION:
@@ -333,7 +330,6 @@ PRIVATE  void vHandleStackEvent( ZPS_tsAfEvent sStackEvent )
 
         case ZPS_EVENT_NWK_FAILED_TO_JOIN:
         	//入网失败
-
             DBG_vPrintf(TRACE_CIE_NODE, "\nZPS_EVENT_NWK_FAILED_TO_JOIN - %x \n",sStackEvent.uEvent.sNwkJoinFailedEvent.u8Status);
         break;
 
@@ -570,6 +566,11 @@ PRIVATE void vInitDR1174LED(void)
     /*Make the DIo as output*/
     vAHI_DioSetDirection(0,LED_PERMIT_JOIN);
 }
+
+
+
+
+
 /****************************************************************************/
 /***        END OF FILE                                                   ***/
 /****************************************************************************/

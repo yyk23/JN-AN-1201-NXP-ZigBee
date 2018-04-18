@@ -21,7 +21,7 @@ typedef struct{
 }sBuildNet_Notice;
 
 typedef struct{
-	bool bJoinType;
+	uint8 bJoinType;
 	uYcl M_YCL;
 	uSoft_Ver  M_Soft_Ver;
 	uHard_Ver  M_Hard_ver;
@@ -35,6 +35,11 @@ typedef struct{
 	uYcl        C_YCL;
 	uSoft_Ver   C_Sofe_Ver;
 }sReadCoorInf_Resp;
+
+typedef struct{
+	uYcl        E_YCL;
+	uint16      E_Hearttime;
+}sEnd_Hearttime;
 
 
 typedef struct{

@@ -15,11 +15,12 @@
 #define BUILD_UINT16(loByte, hiByte) \
           ((uint16)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)))
 
-
+#define TRACE_APP_UART    TRUE
+#define UART_APP_PORT  E_AHI_UART_1
 #define VALID_VALUE                0xAA
 
 #define UART_RX_MAX_NUM            150
-#define UART_RX_DATA_MAX_NUM       130  //最大数据段字节数量
+#define UART_RX_DATA_MAX_NUM       150  //最大数据段字节数量
 #define UART_TX_MAX_NUM            200
 #define CJP_HEAD_LEN               (sizeof(sCJP_Head))
 #define CJP_SIMPLE_RESP_LEN        3
@@ -45,7 +46,7 @@
 
 #define PROFILE_ID      0x0104
 
-#define COOR_YCL_ID     0x00000100UL
+#define COOR_YCL_ID     0x59000100UL
 
 #define PERMIT_JOIN_TIME  50
 
@@ -90,6 +91,8 @@ typedef enum
 	CJP_READ_COOR_DEV_INF_RESP        =0x13,
 	CJP_READ_END_DEV_INF_REQ          =0x14,
 	CJP_READ_END_DEV_INF_RESP         =0x15,
+	CJP_REPORT_END_DEV_LIST_REQ       =0x16,
+	CJP_UPDATE_END_DEV_HEARTTIME_REQ  =0x17,
 	CJP_COOR_SELF_TEST_REQ            =0x70,
 	CJP_COOR_SELF_TEST_RESULT_NOTICE  =0x71,
 
@@ -131,6 +134,15 @@ typedef enum
 	CJP_FTYPE_ERROR     =0x03
 
 } CJP_Status;
+
+typedef enum{
+	DEV_STATUS_FAULT = 0x11,
+	DEV_STATUS_POWER_LOW = 0x33,
+	DEV_STATUS_HEART_DATA = 0x44,
+	DEV_STATUS_ALARM = 0x55,
+	DEV_STATUS_LAST_ALARM =0x66,
+	DEV_STATUS_NOMAL = 0xaa
+}eDev_Status;
 
 typedef  union {
        uint8 YCL_Array[4];
@@ -242,10 +254,12 @@ typedef struct{
 }sAttr_Charact;
 
 
+
 typedef  teZCL_ZCLAttributeType  CJP_DataType;
 
 #pragma pack()    //按照1字节对齐结束
 
+extern uint16 AFrame_Seq;
 extern uint16 Frame_Seq;
 extern uint8  Uart_STxBuf[UART_TX_MAX_NUM+1];
 extern uSoft_Ver CIE_soft_ver;
@@ -258,5 +272,6 @@ PUBLIC void User_Uart_Init(void);
 PUBLIC uint16 Uart_ProcessEvent( uint8 task_id, uint16 events );
 PUBLIC void app_UartSendMesg(APP_uartEventType  type);
 PUBLIC CJP_Status CJP_TxData(uint8 len);
+PUBLIC void printf_array(uint8 * array , uint8 len);
 
 #endif /* APP_UART_H_ */

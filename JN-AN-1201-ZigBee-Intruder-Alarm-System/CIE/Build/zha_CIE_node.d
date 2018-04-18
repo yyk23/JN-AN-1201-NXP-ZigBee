@@ -81,6 +81,7 @@ zha_CIE_node.o: \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASWD.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASZone.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASACE.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/zha_CIE_node.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/haEzJoin.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PDM_IDs.h \
@@ -104,7 +105,6 @@ zha_CIE_node.o: \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PDM_IDs.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Platform/DK4/Include/GenericBoard.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_save.h \
- c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_cmd_handle.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_data_handle.h
 
@@ -270,6 +270,8 @@ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASACE.h:
 
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:
+
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/zha_CIE_node.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/haEzJoin.h:
@@ -315,8 +317,6 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Platform/DK4/Include/GenericBoard.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_save.h:
-
-c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_CIE_uart.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/CIE/Source/app_cmd_handle.h:
 

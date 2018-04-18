@@ -239,7 +239,7 @@ void DevInf_init(void)
 {
 	uint16 u16ByteRead;
 	tsEP_Dev_Inf sTemp_Dev_Inf;
-	sEP_Dev_Inf.sM_YCL.Mac=ZPS_u64AplZdoGetIeeeAddr();//设备的MAC地址
+	sEP_Dev_Inf.sM_YCL.sYCL.Mac=ZPS_u64AplZdoGetIeeeAddr();//设备的MAC地址
 	 //读取保存在EEROM中的数据
 	PDM_eReadDataFromRecord(PDM_ID_APP_EP_DEV_INF,&sTemp_Dev_Inf,sizeof(tsEP_Dev_Inf),&u16ByteRead);
 	  //数据初始化

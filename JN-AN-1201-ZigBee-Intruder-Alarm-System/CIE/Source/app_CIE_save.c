@@ -244,17 +244,19 @@ PUBLIC bool add_dev_model_data_manage(sAttr_Model_Array Model_Array)
 	{
 	//添加到模型列表
 		Attr_Model_Array[Coor_Dev_manage.model_num] = Model_Array;
+		Coor_Dev_manage.model_num++;
 	}
 	else
 	{
 	//更新模型列表
 		Attr_Model_Array[mp-1] = Model_Array;
+
 	}
 
 	PDM_eSaveRecordData( 		 PDM_ID_CIE_DEV_MODEL_TABLE_1+Coor_Dev_manage.model_num	,
 								 &Model_Array,
 		                         sizeof(sAttr_Model_Array));//
-	Coor_Dev_manage.model_num++;
+
 
 	PDM_eSaveRecordData( 		  PDM_ID_CIE_DEV_MANAGE_INF,
 				                  &Coor_Dev_manage,
@@ -298,6 +300,42 @@ PUBLIC bool get_dev_model(uint16 tclusterId,sAttr_Model_Array *Model_Array)
 	}
 
 	return FALSE;
+}
+
+
+/*
+ * 根据模型数据和CJP协议的属性ID找到对应的ZigBee协议的属性nID
+ *
+ */
+PUBLIC uint8 get_CJP_attrID(sAttr_Model_Array *Model_Array , uint16 z_attrID)
+{
+	uint8 i=0;
+	for(i=0; i<Model_Array->Attr_Model[0].head.attrnum; i++)
+	{
+		if(Model_Array->Attr_Model[i+1].attr.CattrID==z_attrID)
+		{
+			return Model_Array->Attr_Model[i+1].attr.CattrID;
+		}
+	}
+	return 0;
+}
+
+
+/*
+ * 根据模型数据和zigbee协议的属性ID找到对应的CJP协议的属性nID
+ *
+ */
+PUBLIC uint16 get_zigbee_attrID(sAttr_Model_Array *Model_Array , uint8 c_attrID)
+{
+	uint8 i=0;
+	for(i=0; i<Model_Array->Attr_Model[0].head.attrnum; i++)
+	{
+		if(Model_Array->Attr_Model[i+1].attr.CattrID==c_attrID)
+		{
+			return Model_Array->Attr_Model[i+1].attr.zattrID;
+		}
+	}
+	return 0;
 }
 
 /****************************************************************************

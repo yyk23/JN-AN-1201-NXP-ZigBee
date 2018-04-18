@@ -7,10 +7,9 @@
 
 #include "app_events.h"
 #include "app_data_handle.h"
+#include "app_CIE_uart.h"
 
-
-extern uint8 sdata[50];
-
+PUBLIC CJP_Status fCJP_Tx_Coor(uYcl ycl ,CJP_CmdID cmd_coor , uint8 *pdata , uint8 len);
 PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid);
 PUBLIC   void     fBuildNet_Notice(CJP_Status);
 PUBLIC CJP_Status fJoinNet_Set(uint8 time);

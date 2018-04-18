@@ -56,6 +56,8 @@ PUBLIC bool get_dev_model(uint16 tclusterId,sAttr_Model_Array *Model_Array);
 PUBLIC uint8  find_dev_model(uint16  tclusterId);
 PUBLIC void vLoadIASCIEFromEEPROM(uint8 u8SourceEndpoint);
 PUBLIC void vVerifyIASCIELoad(uint8 u8SourceEndpoint);
+PUBLIC uint8 get_CJP_attrID(sAttr_Model_Array *Model_Array , uint16 z_attrID);
+PUBLIC uint16 get_zigbee_attrID(sAttr_Model_Array *Model_Array , uint8 c_attrID);
 /****************************************************************************/
 /***        External Variables                                            ***/
 /****************************************************************************/

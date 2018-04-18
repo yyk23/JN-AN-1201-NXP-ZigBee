@@ -46,6 +46,13 @@
 /****************************************************************************/
 /***        Type Definitions                                              ***/
 /****************************************************************************/
+typedef struct{
+	uint8 u8FrameCtr;
+	uint16 u16ManFact_Code;
+	uint8 u8SeqNum;
+	uint8 u8CommandID;
+}sZCL_Head;
+
 
 /****************************************************************************/
 /***        Exported Functions                                            ***/
@@ -53,6 +60,9 @@
 PUBLIC void APP_vInitialiseNode(void);
 PUBLIC teNODE_STATES eGetNodeState(void);
 PUBLIC void app_vRestartNode (void);
+
+
+
 /****************************************************************************/
 /***        External Variables                                            ***/
 /****************************************************************************/

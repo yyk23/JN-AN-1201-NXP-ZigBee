@@ -56,10 +56,13 @@
 
 #include <jendefs.h>
 #include "control_and_indicating_equipment.h"
-
+#include "app_CIE_uart.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
+
+#define ALIGN(n, v)     ( ((uint32)(v) + ((n) - 1)) & (~((n) - 1)) )
+
 #define CLD_IASACE_PANEL_PARAMTER_SECONDS_REMAINING     10
 #define DISABLE_WARNING                                 0
 #define ENTRY_EXIT_DELAY_WARNING_DURATION               10
@@ -73,6 +76,53 @@
 #define SQUAWK_MODE_STROBE_AND_LEVEL_ARMED				0x0B
 #define SQUAWK_MODE_STROBE_AND_LEVEL_DISARMED			0x1B
 
+
+
+
+typedef enum{
+	E_ZCL_FRAME_HEART_DATA_REPORT = 0x01  ,
+	E_ZCL_FRAME_NORMAL_DATA_REPORT   ,
+	E_ZCL_FRAME_ALARM_DATA_REPORT    ,
+	E_ZCL_FRAME_DEV_INF_DATA_REPORT  ,
+	E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT  ,
+	E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE,
+	E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE,
+
+
+	E_ZCL_FRAME_OTA_DATA  =0x50
+
+}eZCL_Frametype;
+
+
+typedef struct{
+	uint16 u16AttrID;
+	uint8  u8Datatype;
+
+}sReportAttr_Desc;
+
+typedef struct{
+	uint8  u16CAttrID;
+	uint8  u8Datatype;
+
+}sCJPReportAttr_Desc;
+
+typedef enum{
+	    E_CLD_BAS_ATTR_ID_M_YCL                = 0xF001, /* Mandatory */
+	    E_CLD_BAS_ATTR_ID_M_CLUSTERID,
+	    E_CLD_BAS_ATTR_ID_HEARTTIME,
+	    E_CLD_BAS_ATTR_ID_M_SOFT_VER,
+	    E_CLD_BAS_ATTR_ID_M_HARD_VER,
+	    E_CLD_BAS_ATTR_ID_S_SOFT_VER          =0xF022,
+	    E_CLD_BAS_ATTR_ID_ATTR_SW_TABLE       =0xF023,
+}eBasic_AttrID;
+
+
+typedef enum{
+	E_CLD_COMMON_ATTR_ID_POWER_VALUE =0xFF01,
+	E_CLD_COMMON_ATTR_ID_SIG_VALUE ,
+	E_CLD_COMMON_ATTR_ID_DEV_STATUS ,
+	E_CLD_COMMON_ATTR_ID_HEARTTIME
+}eCommon_AttrID;
 /****************************************************************************/
 /***        Type Definitions                                              ***/
 /****************************************************************************/
@@ -84,6 +134,17 @@ PUBLIC void APP_ZCL_vInitialise(void);
 PUBLIC void vPermitJoinIndication(void);
 PUBLIC bool bCheckNotReadyToArm(uint8 u8ConfigFlag);
 PUBLIC void vStartArmingSystem(void);
+
+
+PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len);
+PUBLIC CJP_Status fEndDev_SwModle_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len);
+PUBLIC CJP_Status fEndDev_WriteAttr_Resp_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len);
+PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 commandID ,uint8 * sdata ,uint8 u8attrnum , uint16 u16len);
+
+PUBLIC uint16 App_u16BufferReadNBO ( uint8         *pu8Struct,
+                                     const char    *szFormat,
+                                     void          *pvData);
+PUBLIC uint16 APP_u16GetAttributeActualSize ( uint32    u32Type , uint16    u16NumberOfItems );
 /****************************************************************************/
 /***        Exported Variables                                            ***/
 /****************************************************************************/

@@ -56,12 +56,11 @@ typedef uint32 tDev_YCLID;
 
 
  typedef  union {
-        uint8 YCL_Array[13];
+        uint8 YCL_Array[12];
         struct {
-        	uint8  Num;
         	uint32 YCL_ID;
         	uint64 Mac;
-        };
+        }sYCL;
 }uYcl;
 
 typedef  union {
@@ -77,7 +76,7 @@ typedef  union {
 		uint8 Sv_Secv_Num;
 		uint8 Sv_Modv_Num;
 		uint8 Sv_Dev_Date[3];
-	};
+	}sSoft_Ver;
 
 }uSoft_Ver;
 
@@ -90,7 +89,7 @@ typedef  union {
 		uint8  Hv_Dev_Company;
 		uint16 Hv_Dev_Date[2];
 		uint8  Hv_Prod_Ser;
-	};
+	}sHard_Ver;
 }uHard_Ver;
 
 typedef struct
@@ -168,7 +167,7 @@ typedef struct
 	uint16 				M_ClusterID;//Cluster ID
 	uint16   			heartbeat_value;//心跳时间
 	uSoft_Ver 			sM_Sv;//通信模块的软件版本
-	uHard_Ver 			sM_Hv;//通信模块的软件版本
+	uHard_Ver 			sM_Hv;//通信模块的硬件版本
 	uYcl 				sS_YCL;//传感模块的软件版本
 	uint8               Serve_CompanyCode;//传感模块的厂家
 	uSoft_Ver 			sS_Sv;//传感模块的软件版本

@@ -77,6 +77,7 @@
 #include "app_ias_save.h"
 #include "app_sleep_functions.h"
 #include "PingParent.h"
+#include "app_uart.h"
 #ifdef CSW
 #include "GenericBoard.h"
 #endif
@@ -297,7 +298,13 @@ OS_TASK(APP_ZHA_Switch_Task)
 
         }
 
+        else if(ZPS_EVENT_NWK_JOINED_AS_ENDDEVICE == sStackEvent.eType)
+        {
+        	app_SendDveInf();//发送设备基本信息，代表设备入网成功
+        	app_SendSW_Model();//发送设备的属性转换列表
+        	app_UartSendMesg(APP_U_EVENT_ESEND_DEV_INFO);
         /*******************************************************************************/
+        }
     }
 
 
@@ -340,15 +347,11 @@ OS_TASK(APP_ZHA_Switch_Task)
             }
             /* Handle joined as end device event，入网成功 */
             /*入网成功处理*/
-            if(ZPS_EVENT_NWK_JOINED_AS_ENDDEVICE  == sStackEvent.eType)
+            if((ZPS_EVENT_NWK_JOINED_AS_ENDDEVICE  == sStackEvent.eType)||(ZPS_EVENT_NWK_JOINED_AS_ROUTER == sStackEvent.eType))
             {
                 /* As just rejoined so start ping time from here again */
                 bPingSent = FALSE;
                 vResetPingTime();
-                //发送发送设备信息消息
-                //发送读取设备状态消息
-                app_UartSendMesg(APP_U_EVENT_ESEND_DEV_INFO);
-                app_UartSendMesg(APP_U_EVENT_ESEND_DATA);
 
             }
 

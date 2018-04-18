@@ -6,7 +6,7 @@
  *
  * COMPONENT:      os_gen.c
  *
- * DATE:           Wed Dec 27 13:39:07 2017
+ * DATE:           Wed Apr 18 16:03:44 2018
  *
  * AUTHOR:         Jennic RTOS Configuration Tool
  *
@@ -273,14 +273,14 @@ tsMessage os_Message_APP_msgZpsEvents_ZCL = {
     0
 };
 
-PRIVATE APP_uartEvent s_aMessageData_APP_msgUartEvents[8];
+PRIVATE APP_uartEvent s_aMessageData_APP_msgUartEvents[5];
 tsMessage os_Message_APP_msgUartEvents = {
     OS_MESSAGE_MAGIC,
     s_aMessageData_APP_msgUartEvents,
     0,
     0,
     0,
-    8,
+    5,
     sizeof(APP_uartEvent),
     &os_Task_APP_taskuart,
     4,
@@ -472,6 +472,10 @@ PRIVATE bool os_bStrictCheck(void *hTask, void *prvISR, void *hObject, unsigned 
                         bOK = TRUE;
                     }            
                     if (hObject == &os_Message_APP_msgEvents)
+                    {
+                        bOK = TRUE;
+                    }            
+                    if (hObject == &os_Message_APP_msgUartEvents)
                     {
                         bOK = TRUE;
                     }            

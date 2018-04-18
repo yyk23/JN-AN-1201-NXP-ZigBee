@@ -347,7 +347,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         			{
         				ZCL_Frametype=E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT;//表明此帧数据传输的是转换模型
         			}
-        			else
+        			else if(tattrID == E_CLD_BAS_ATTR_ID_M_YCL)
         			{
         				ZCL_Frametype = E_ZCL_FRAME_DEV_INF_DATA_REPORT;//表明此帧数据传输的是设备基本信息
         			}
@@ -447,24 +447,24 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
     	//根据接收到的帧类型进行处理
     	switch(ZCL_Frametype)
     	{
-    	case E_ZCL_FRAME_DEV_INF_DATA_REPORT: //设备基本信息上报处理
-          fEndDev_BasicInf_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
-    		break;
-    	case E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT://设备转换模型处理
-    		fEndDev_SwModle_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
-    		break;
-    	case E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE:// 设备写属性回复处理
-    		fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
-    		break;
-    	case E_ZCL_FRAME_HEART_DATA_REPORT:
-    	case E_ZCL_FRAME_NORMAL_DATA_REPORT:
-    	case E_ZCL_FRAME_ALARM_DATA_REPORT:
-    	case E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE://设备上报属性、读属性回复处理
+    		case E_ZCL_FRAME_DEV_INF_DATA_REPORT: //设备基本信息上报处理
+    			fEndDev_BasicInf_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
+    			break;
+    		case E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT://设备转换模型处理
+    			fEndDev_SwModle_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
+    			break;
+    		case E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE:// 设备写属性回复处理
+    			fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+    			break;
+    		case E_ZCL_FRAME_HEART_DATA_REPORT:
+    		case E_ZCL_FRAME_NORMAL_DATA_REPORT:
+    		case E_ZCL_FRAME_ALARM_DATA_REPORT:
+    		case E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE://设备上报属性、读属性回复处理
     		//数组指针  --  数组有效长度   属性个数  ---   命令ID----
-    		fEndDev_ReportAttr_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
-    	break;
-    	default :
-    		break;
+    			fEndDev_ReportAttr_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+    			break;
+    		default :
+    			break;
 
     	}
     	u16Length=0;//开始接收新的一帧数据

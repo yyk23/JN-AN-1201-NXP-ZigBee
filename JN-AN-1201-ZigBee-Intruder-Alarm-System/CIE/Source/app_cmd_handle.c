@@ -95,8 +95,9 @@ PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid)
 	//开始建网
 	if((ZPS_u16AplZdoGetNetworkPanId()!=panid) || (ZPS_u8AplZdoGetRadioChannel()!=channel))
 	{
-		ZPS_eAplAibSetApsChannelMask (1<<channel);//设置信道
-		ZPS_eAplZdoStartStack();
+
+		//ZPS_eAplAibSetApsChannelMask (1<<channel);//设置信道
+		//ZPS_eAplZdoStartStack();
 	}
 
 	return status;
@@ -329,7 +330,7 @@ PUBLIC CJP_Status fReport_End_Dev_List(void)
 	sdata[0]=k;
 	sdata[1]=frame_seq;
 	sdata[2]=frame_num;
-	fCJP_Tx_Coor(CIE_Ycl , CJP_REPORT_END_DEV_LIST_REQ , sdata , len);
+	fCJP_Tx_Coor(CIE_Ycl , CJP_READ_END_DEV_LIST_RESP , sdata , len);
 	return CJP_SUCCESS;
 }
 

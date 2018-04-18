@@ -231,22 +231,43 @@ void DevInf_init(void)
 	  //数据初始化
 	if(sTemp_Dev_Inf.Data_valid!=VALID_VALUE)
 	{
+		sEP_Dev_Inf.Data_valid = VALID_VALUE;
+		sEP_Dev_Inf.M_ClusterID = 0x0500;
+		sEP_Dev_Inf.M_ProfileID = 0x0104;
+		sEP_Dev_Inf.S_valid_flag = VALID_VALUE;
+		sEP_Dev_Inf.Sensing_flag = VALID_VALUE;
+		sEP_Dev_Inf.Serve_CompanyCode = STWE_COMPANY;
+		sEP_Dev_Inf.sEP_Dev_HeartBeat = DEF_HEARTBEAT_VALUE;
+
+		sEP_Dev_Inf.sM_Hv.sHard_Ver.Hv_Dev_Company = STWE_COMPANY;
+		sEP_Dev_Inf.sM_Hv.sHard_Ver.Hv_YCL_ID= YCLID_ED ;
+		sEP_Dev_Inf.sM_Hv.sHard_Ver.Hv_Logo = 0x48;
+		sEP_Dev_Inf.sM_Hv.sHard_Ver.Hv_TecPro = 0x0101;
+
+		sEP_Dev_Inf.sM_Sv.sSoft_Ver.Sv_YCL_ID = YCLID_ED;
+		sEP_Dev_Inf.sM_Sv.sSoft_Ver.Sv_Mainv_Num =0x01;
+		sEP_Dev_Inf.sM_Sv.sSoft_Ver.Sv_Secv_Num = 0x00;
+
+		sEP_Dev_Inf.sM_YCL.sYCL.YCL_ID = YCLID_ED;
+		sEP_Dev_Inf.sM_YCL.sYCL.Mac = ZPS_u64AplZdoGetIeeeAddr();//设备的MAC地址
+
+		sEP_Dev_Inf.sS_Sv.sSoft_Ver.Sv_YCL_ID = YCLID_ED+1;
+		sEP_Dev_Inf.sS_Sv.sSoft_Ver.Sv_Mainv_Num = 0x02;
+		sEP_Dev_Inf.sS_Sv.sSoft_Ver.Sv_Secv_Num = 0x03;
+
 		PDM_eSaveRecordData(PDM_ID_APP_EP_DEV_INF,&sEP_Dev_Inf,sizeof(tsEP_Dev_Inf));//保存到EEPROM中
 		app_UartSendMesg(APP_U_EVENT_READ_DEV_INFO);//发送读取设备信息消息
 	}
 	else
 	{
 		sEP_Dev_Inf=sTemp_Dev_Inf;
-		if(sEP_Dev_Inf.sEP_Dev_HeartBeat.Valid!=VALID_VALUE)
-		{
-			sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value=DEF_HEARTBEAT_VALUE;
-		}
-	}
 
+	}
+	//basic clusterID基本信息初始化
 	 sLinkKey=Linkkey_Calculate(sEP_Dev_Inf.sM_YCL);//计算链接密钥
 	 sCluster_Basic_Attr.sM_YCL=sEP_Dev_Inf.sM_YCL;
 	 sCluster_Basic_Attr.M_ClusterID=sEP_Dev_Inf.M_ClusterID;
-	 sCluster_Basic_Attr.heartbeat_value=sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value;
+	 sCluster_Basic_Attr.heartbeat_value=sEP_Dev_Inf.sEP_Dev_HeartBeat;
 	 sCluster_Basic_Attr.sM_Hv=sEP_Dev_Inf.sM_Hv;
 	 sCluster_Basic_Attr.sM_Sv=sEP_Dev_Inf.sM_Sv;
 	 sCluster_Basic_Attr.Serve_CompanyCode=sEP_Dev_Inf.Serve_CompanyCode;
@@ -310,7 +331,7 @@ OS_TASK(APP_taskuart)
     		 //更新Basic ClusterID的相关属性
     		 sCluster_Basic_Attr.sM_YCL=sEP_Dev_Inf.sM_YCL;
     		 sCluster_Basic_Attr.M_ClusterID=sEP_Dev_Inf.M_ClusterID;
-    		 sCluster_Basic_Attr.heartbeat_value=sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value;
+    		 sCluster_Basic_Attr.heartbeat_value=sEP_Dev_Inf.sEP_Dev_HeartBeat;
     		 sCluster_Basic_Attr.sM_Hv=sEP_Dev_Inf.sM_Hv;
     		 sCluster_Basic_Attr.sM_Sv=sEP_Dev_Inf.sM_Sv;
     		 sCluster_Basic_Attr.Serve_CompanyCode=sEP_Dev_Inf.Serve_CompanyCode;
@@ -372,14 +393,14 @@ PUBLIC bool  app_SendsSatusDate(void)
 	ZPS_tsAfProfileDataReq psProfileDataReq1;
 	ZPS_tuAddress  tuAddress;
 	static uint8 sqen=1;
-	bool old_send_type=TRUE;
+	bool old_send_type=FALSE;
 	volatile uint16 u16PayloadSize=0;
 	PDUM_thAPduInstance hAPduInst;
 
 	tuAddress.u16Addr=0;
 	psProfileDataReq1.uDstAddr=tuAddress;
 	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
-	psProfileDataReq1.u16ClusterId=sEP_Dev_Inf.M_ClusterID;//
+	psProfileDataReq1.u16ClusterId=0x0500;//
 	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
 	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
 	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
@@ -398,7 +419,7 @@ PUBLIC bool  app_SendsSatusDate(void)
 	      sqen = u8GetTransactionSequenceNumber();
 	      u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
 	                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
-	        		                     FALSE,
+	        		                     TRUE,
 	        		                     ZCL_MANUFACTURER_CODE,
 	        		                     TRUE,
 	        		                     TRUE,
@@ -407,12 +428,12 @@ PUBLIC bool  app_SendsSatusDate(void)
 	      if(old_send_type==FALSE)
 	      {
 
-	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_STATUS);//ID
-	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_BMAP16);//map16
-	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sSen_Status_Data.dev_state);//设备状态
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_STATUS);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT8);//map16
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_state);//设备状态
 
 
-	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_APP_POWER_VALUE);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ZONE_POWER_VALUE);//ID
 	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT8);//map16
 	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_power_state);//电池电量
 
@@ -420,8 +441,6 @@ PUBLIC bool  app_SendsSatusDate(void)
 
 	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
-	    	  app_SendDveInf();
-
 	      }
 	      //以前的数据格式
 	      else
@@ -481,7 +500,7 @@ PUBLIC bool  app_SendDveInf(void)
 		  sqen = u8GetTransactionSequenceNumber();
 		  u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
 										 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
-										 FALSE,
+										 TRUE,
 										 ZCL_MANUFACTURER_CODE,
 										 TRUE,
 										 TRUE,
@@ -576,7 +595,7 @@ PUBLIC bool  app_SendSW_Model(void)
 		sqen = u8GetTransactionSequenceNumber();
 		u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
 		                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
-		        		                     FALSE,
+		                   	   	   	   	   	 TRUE,
 		        		                     ZCL_MANUFACTURER_CODE,
 		        		                     TRUE,
 		        		                     TRUE,
@@ -589,13 +608,15 @@ PUBLIC bool  app_SendSW_Model(void)
 
 		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_SW_MODEL);//ID
 	    u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//enum16 data_type
-
+	    u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(asEnd_SW_Model));//enum16 data_type
+	    u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0c",asEnd_SW_Model);//zigbee attrID
+	    /*
 	    for(i=0; i<4 ;i++)
 	    {
 	    	u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",asEnd_SW_Model[i].zattrID);//zigbee attrID
 	    	u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",asEnd_SW_Model[i].CattrID);//CJP attrID
 	    }
-
+		*/
 		PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 		ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
 

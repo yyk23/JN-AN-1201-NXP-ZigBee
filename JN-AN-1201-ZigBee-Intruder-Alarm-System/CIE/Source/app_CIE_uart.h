@@ -91,8 +91,9 @@ typedef enum
 	CJP_READ_COOR_DEV_INF_RESP        =0x13,
 	CJP_READ_END_DEV_INF_REQ          =0x14,
 	CJP_READ_END_DEV_INF_RESP         =0x15,
-	CJP_REPORT_END_DEV_LIST_REQ       =0x16,
+	CJP_READ_END_DEV_LIST_RESP       =0x16,
 	CJP_UPDATE_END_DEV_HEARTTIME_REQ  =0x17,
+	CJP_READ_END_DEV_LIST_REQ        =0x18,
 	CJP_COOR_SELF_TEST_REQ            =0x70,
 	CJP_COOR_SELF_TEST_RESULT_NOTICE  =0x71,
 
@@ -184,8 +185,8 @@ typedef  union {
 		uint8 Hv_Logo;
 		uint32 Hv_YCL_ID;
 		uint16 Hv_TecPro;
-		uint8 Hv_Dev_Date[2];
 		uint8  Hv_Dev_Company;
+		uint8 Hv_Dev_Date[2];
 		uint8  Hv_Prod_Ser;
 	}sHard_Ver;
 }uHard_Ver;//Ó²¼þ°æ±¾

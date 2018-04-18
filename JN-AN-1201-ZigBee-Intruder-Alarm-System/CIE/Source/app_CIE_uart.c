@@ -537,6 +537,20 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
 	  			DBG_vPrintf(TRACE_APP_UART, "Read end device information error\n");
 	  		 }
 	  		 break;
+
+	  	  case CJP_READ_END_DEV_LIST_REQ:
+			DBG_vPrintf(TRACE_APP_UART, "CJP_READ_END_DEV_LIST_REQ\n");
+			tCJPstatus = fReport_End_Dev_List();
+			if(tCJPstatus == CJP_SUCCESS)
+			{
+			 DBG_vPrintf(TRACE_APP_UART, "Read end device list success\n");
+			}
+			else
+			{
+			DBG_vPrintf(TRACE_APP_UART, "Read end device list error\n");
+			}
+			break;
+
 	  	  case CJP_COOR_SELF_TEST_REQ:
 	  		  DBG_vPrintf(TRACE_APP_UART, "CJP_COOR_SELF_TEST_REQ\n");
 	  		  tCJPstatus = fCoor_Self_Test();

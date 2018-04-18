@@ -102,6 +102,7 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/IASACE.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/app_sleep_functions.h \
  c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PingParent.h \
+ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/app_uart.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Platform/DK4/Include/GenericBoard.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
@@ -307,5 +308,7 @@ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Clusters/IAS/Include/
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/app_sleep_functions.h:
 
 c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/Common/Source/PingParent.h:
+
+c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-System/ZONE/Source/app_uart.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Platform/DK4/Include/GenericBoard.h:

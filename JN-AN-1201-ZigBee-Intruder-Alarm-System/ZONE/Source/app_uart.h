@@ -18,13 +18,12 @@
 #define STWE_COMPANY		0x03
 #define SWTL_COMPANY        0x05
 //设备YCLID定义
-#define YCLID_METHANE                       0x59020112  //天然气泄漏传感器
-#define YCLID_SMOKE                         0x59020106  //烟雾传感器
-#define YCLID_CALL                          0x59020136  //紧急呼叫传感器
-#define YCLID_PIR                           0x59020102 //红外传感器
-#define YCLID_ED                            0x59020132  //门磁探测器器
-#define YCLID_WA                            0x59020116 //水浸传感器
-
+#define YCLID_METHANE                       0x59121112  //天然气泄漏传感器
+#define YCLID_SMOKE                         0x59121106  //烟雾传感器
+#define YCLID_CALL                          0x59121136  //紧急呼叫传感器
+#define YCLID_PIR                           0x59121102 //红外传感器
+#define YCLID_ED                            0x59121132  //门磁探测器器
+#define YCLID_WA                            0x59121116 //水浸传感器
 #define YCLID_WQ                            0x59040102  //水质监测
 
 
@@ -87,7 +86,7 @@ typedef  union {
 		uint32 Hv_YCL_ID;
 		uint16 Hv_TecPro;
 		uint8  Hv_Dev_Company;
-		uint16 Hv_Dev_Date[2];
+		uint8 Hv_Dev_Date[2];
 		uint8  Hv_Prod_Ser;
 	}sHard_Ver;
 }uHard_Ver;
@@ -122,7 +121,7 @@ typedef struct
 typedef struct
 {
 	uint8               Data_valid;
-	tsEP_Dev_HeartBeat 	sEP_Dev_HeartBeat;//心跳周期
+	uint16 	            sEP_Dev_HeartBeat;//心跳周期
 	uYcl  				sM_YCL;//通信模块的YCL
 	uint16              M_ProfileID;
 	uint16 				M_ClusterID;//Cluster ID
@@ -158,10 +157,8 @@ typedef struct
 	uint16   			heartbeat_value;//心跳时间
 	uSoft_Ver 			sM_Sv;//通信模块的软件版本
 	uHard_Ver 			sM_Hv;//通信模块的硬件版本
-	uYcl 				sS_YCL;//传感模块的软件版本
 	uint8               Serve_CompanyCode;//传感模块的厂家
 	uSoft_Ver 			sS_Sv;//传感模块的软件版本
-	uHard_Ver 			sS_Hv;//传感模块的硬件版本
 
 }tsCluster_Basic_Attr;
 

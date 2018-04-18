@@ -153,13 +153,9 @@ PRIVATE void vStopSWTimers (void)
  ****************************************************************************/
 PUBLIC void vScheduleSleep(void)
 {
-	ucs cs;
-		cs.YCL_ID=0x12345678;
-		DBG_vPrintf(1,"a[0] =%x",cs.YCL_Array[0]);
-		DBG_vPrintf(1,"a[1] =%x",cs.YCL_Array[1]);
-		DBG_vPrintf(1,"a[2] =%x",cs.YCL_Array[2]);
-		DBG_vPrintf(1,"a[3] =%x",cs.YCL_Array[3]);
+
 	//进入低功耗前
+	/*
 	if(sDeviceDesc.eNodeState==E_RUNNING)//设备在正在运行
 	{
 		if( !App_BusyRead() )
@@ -169,6 +165,7 @@ PUBLIC void vScheduleSleep(void)
 
 		#ifdef PERIODIC_WAKE
 		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value , vAppWakeCallBack  );     /* Schedule the next sleep point */
+	/*
 		if(!teStatus)
 		{
 			DBG_vPrintf(SLEEP_INFO, "\r\n Scheduling sleep point in %d Min, status = %d\n",sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value,teStatus);
@@ -199,6 +196,7 @@ PUBLIC void vScheduleSleep(void)
 	{
 
 	}
+	*/
 
 
 }

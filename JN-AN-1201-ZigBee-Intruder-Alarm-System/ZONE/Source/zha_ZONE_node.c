@@ -181,8 +181,8 @@ PUBLIC void APP_vInitialiseNode(void)
     //vDeletePDMOnButtonPress(APP_BUTTONS_BUTTON_1);
 
 
-    PDM_eReadDataFromRecord(PDM_ID_APP_IASZONE_NODE, &sDeviceDesc,
-            sizeof(tsDeviceDesc), &u16ByteRead);
+    //PDM_eReadDataFromRecord(PDM_ID_APP_IASZONE_NODE, &sDeviceDesc,
+     //       sizeof(tsDeviceDesc), &u16ByteRead);
 
     /*Load the IAS Zone Server attributes from EEPROM */
     eStatusReload = eLoadIASZoneServerAttributesFromEEPROM();//将保存的attuibut的值从内存复制到变量sIASZoneDesc
@@ -459,7 +459,7 @@ PRIVATE void vHandleJoinAndRejoinNWK( ZPS_tsAfEvent *pZPSevent,teEZ_JoinAction e
         DBG_vPrintf(TRACE_ZONE_NODE, "HA EZMode EVT: E_EZ_SETUP_DEVICE_IN_NETWORK \n");
         vStartStopTimer( APP_JoinTimer, APP_TIME_MS(500),(uint8*)&(sDeviceDesc.eNodeState),E_RUNNING );
         u16GroupId=ZPS_u16AplZdoGetNwkAddr();
-        PDM_eSaveRecordData(PDM_ID_APP_IASZONE_NODE, &sDeviceDesc,sizeof(tsDeviceDesc));
+       // PDM_eSaveRecordData(PDM_ID_APP_IASZONE_NODE, &sDeviceDesc,sizeof(tsDeviceDesc));
         ZPS_vSaveAllZpsRecords();
         /* Start 1 seconds polling */
         OS_eStartSWTimer(APP_PollTimer, POLL_TIME, NULL);

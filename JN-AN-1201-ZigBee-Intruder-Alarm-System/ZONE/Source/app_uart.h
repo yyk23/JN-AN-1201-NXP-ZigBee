@@ -131,9 +131,7 @@ typedef struct
 	uint8 				Sensing_flag;//传感模块使能
 	uint8               S_valid_flag;//传感模块 =基本信息的有效性检查
 	uint8               Serve_CompanyCode;//传感厂家代码
-	uYcl 				sS_YCL;//传感模块的YCL
 	uSoft_Ver 			sS_Sv;//传感模块的软件版本
-	uHard_Ver 			sS_Hv;//传感模块的硬件版本
 }tsEP_Dev_Inf;
 
 typedef struct
@@ -151,15 +149,7 @@ typedef struct
 //Attr_ZID定义
 
 
-typedef union
-{
-	uint32  Attr_SW_Data;
-	struct{
-			uint8  Attr_Type;//
-			uint8  Attr_DataType;
-			uint16 Attr_ZID;
-	};
-}tsAttr_Sw;
+
 
 typedef struct
 {
@@ -182,11 +172,9 @@ typedef enum
 	 E_CLD_BASIC_M_CLUSTERID       = 0xF002, // Cluster ID
 	 E_CLD_BASIC_HEARTBEAT_VALUE   = 0xF003,//心跳时间
 	 E_CLD_BASIC_M_SV              = 0xF004,//通信模块的软件版本
-	 E_CLD_BASIC_M_HV              = 0xF005,//通信模块的软件版本
-	 E_CLD_BASIC_S_YCL         	   = 0xF020,//传感模块的软件版本
-	 E_CLD_BASIC_S_COMPANYCODE     = 0xF021,//传感模块的厂家
+	 E_CLD_BASIC_M_HV              = 0xF005,//通信模块的硬件版本
 	 E_CLD_BASIC_S_SV			   = 0xF022,//传感模块的软件版本
-	 E_CLD_BASIC_S_HV         	   = 0xF023 //传感模块的硬件版本
+	 E_CLD_BASIC_SW_MODEL         = 0xF023 //设备属性转换模型表
 } tsCluster_Basic_AttrID;
 
 
@@ -200,31 +188,22 @@ typedef struct
 /* IAS Zone Type */
 typedef enum
 {
-	 E_CLD_IASZONE_STATUS             = 0x0002, //状态
-	 E_CLD_IASZONE_POWER_VALUE        = 0xFF00, //电量
+
+	E_CLD_IASZONE_ZONE_POWER_VALUE = 0xFF01,
+	E_CLD_IASZONE_ZONE_RSSI,
+	E_CLD_IASZONE_STATUS,
+	E_CLD_IASZONE_ZONE_HEARTBEAT_TIME
+
 } tsCluster_IASZONE_AttrID;
 
 
-typedef struct
-{
-	uint8 				Attr_Num;
-	tsAttr_Sw  			Attr_Sw_1;
-	tsAttr_Sw  			Attr_Sw_2;
-	tsAttr_Sw  			Attr_Sw_3;
-	tsAttr_Sw  			Attr_Sw_4;
-}tsCluster_AttrSw_Attr;
-#define ATTR_SW_NUM                  4
-typedef enum
-{
-	 E_CLD_ATTRSW_ATTR_NUM             = 0x0000,
-	 E_CLD_ATTRSW_ATTR_SW1             = 0x0001,
-	 E_CLD_ATTRSW_ATTR_SW2             = 0x0002,
-	 E_CLD_ATTRSW_ATTR_SW3             = 0x0003,
-	 E_CLD_ATTRSW_ATTR_SW4             = 0x0004,
-
-} tsCluster_AttrSw_AttrID;
 
 
+//设备模型转换表
+typedef	struct{
+		uint16 zattrID; //ZigBee的属性ID
+		uint8  CattrID;  //对应CJP协议的属性模型中的属性ID
+}sEnd_SW_Model;
 
 //链接密钥的定义
 typedef  union {
@@ -243,7 +222,7 @@ uint8 			        Uart_TaskID;
 usLinkKey               sLinkKey;
 tsCluster_Basic_Attr   sCluster_Basic_Attr;
 tsCluster_IASZONE_Attr sCluster_IASZONE_Attr;
-tsCluster_AttrSw_Attr  sCluster_AttrSw_Attr;
+
 
 #pragma pack()
 
@@ -256,7 +235,7 @@ PUBLIC void app_StartJoinConfig(bool flag);
 PUBLIC bool app_SendsSatusDate(void);
 PUBLIC void app_UartSendMesg(APP_uartEventType  type);
 PUBLIC bool  app_SendDveInf(void);
-
+PUBLIC bool  app_SendSW_Model(void);
 
 
 #endif /* APP_UART_H_ */

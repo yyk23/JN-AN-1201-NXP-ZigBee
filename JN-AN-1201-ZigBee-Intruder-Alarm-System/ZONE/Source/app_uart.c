@@ -144,19 +144,13 @@ usLinkKey               sLinkKey={{0x5a, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6
 		{SOS_ALARM_DEV,     YCLID_CALL}
 };
 
-tsCluster_AttrSw_Attr  sCluster_AttrSw_Attr={
-		ATTR_SW_NUM,
-		{{ATTR_ID,E_ZCL_UINT8,E_CLD_IASZONE_POWER_VALUE}},
-		{{SIG_ID,E_ZCL_UINT8,0xFFFF}},
-		{{ATTR_ID,E_ZCL_UINT8, E_CLD_IASZONE_STATUS}},
-		{{BASIC_ATTR_ID,E_ZCL_UINT16,E_CLD_BASIC_HEARTBEAT_VALUE}}
-};
+
 
 tsCluster_Basic_Attr   sCluster_Basic_Attr;
 tsCluster_IASZONE_Attr sCluster_IASZONE_Attr;
 /**/
 tsEP_Dev_Inf  sEP_Dev_Inf={
-		VALID_VALUE,                                                    //    Data_valid;
+		/*VALID_VALUE,                                                    //    Data_valid;
 		{VALID_VALUE,DEF_HEARTBEAT_VALUE},                              // 	sEP_Dev_HeartBeat
 		{{0}},                                                           //  				sM_YCL
 		M_PROFILE_ID,                                                    //               M_ProfileID;
@@ -167,13 +161,13 @@ tsEP_Dev_Inf  sEP_Dev_Inf={
 		0xFF,                                                               //               S_valid_flag传感模块 =基本信息的有效性检查
 		0xFF,                                                                //              Serve_CompanyCode传感厂家代码
 		{{0}},                                                             // 				sS_YCL[12]传感模块的YCL
-		{{0}},                                                             // 				sS_Sv[10]传感模块的软件版本
-		{{0x48,0x00,0x00,0x00,0x00,0x60,0x80,0x18,0x03,STWE_COMPANY,0x00}}// 				sS_Hv[11]传感模块的硬件版本
+		{},                                                             // 				sS_Sv[10]传感模块的软件版本
+		{{0x48,0x00,0x00,0x00,0x00,0x60,0x80,0x18,0x03,STWE_COMPANY,0x00}}// 				sS_Hv[11]传感模块的硬件版本*/
 	};//传感设备基本信息;
 
 const tsZCL_AttributeDefinition IASZoneClusterAttributeDefinitions[] = {
        { E_CLD_IASZONE_STATUS,                     E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT8,      (uint32)(&((tsCLD_IASZone*)(0))->e8ZoneState),0},
-       { E_CLD_IASZONE_POWER_VALUE,                E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT8,      (uint32)(&((tsCLD_IASZone*)(0))->e16ZoneType),0}
+       { E_CLD_IASZONE_ZONE_POWER_VALUE,                E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT8,      (uint32)(&((tsCLD_IASZone*)(0))->e16ZoneType),0}
 
    };
 
@@ -183,19 +177,11 @@ const tsZCL_AttributeDefinition BasicClusterAttributeDefinitions[] = {
        { E_CLD_BASIC_HEARTBEAT_VALUE,              E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT16,      (uint32)(&((tsCluster_Basic_Attr*)(0))->heartbeat_value),0},
        { E_CLD_BASIC_M_SV,                   	   E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_OSTRING ,    (uint32)(&((tsCluster_Basic_Attr*)(0))->sM_Sv),0},
        { E_CLD_BASIC_M_HV,                         E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_OSTRING ,    (uint32)(&((tsCluster_Basic_Attr*)(0))->sM_Hv),0},
-       { E_CLD_BASIC_S_YCL,                        E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_OSTRING ,    (uint32)(&((tsCluster_Basic_Attr*)(0))->sS_YCL),0},
-       { E_CLD_BASIC_S_COMPANYCODE,                E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT8,       (uint32)(&((tsCluster_Basic_Attr*)(0))->Serve_CompanyCode),0},
        { E_CLD_BASIC_S_SV,                         E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_OSTRING ,    (uint32)(&((tsCluster_Basic_Attr*)(0))->sS_Sv),0},
-       { E_CLD_BASIC_S_HV,                         E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_OSTRING ,    (uint32)(&((tsCluster_Basic_Attr*)(0))->sS_Hv),0}
+
    };
 
-const tsZCL_AttributeDefinition AttrSwClusterAttributeDefinitions[] = {
-       { E_CLD_ATTRSW_ATTR_NUM,                    E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT8,       (uint32)(&((tsCluster_AttrSw_Attr*)(0))->Attr_Num),0},
-       { E_CLD_ATTRSW_ATTR_SW1,                    E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT32,      (uint32)(&((tsCluster_AttrSw_Attr*)(0))->Attr_Sw_1),0},
-       { E_CLD_ATTRSW_ATTR_SW2,                    E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT32,      (uint32)(&((tsCluster_AttrSw_Attr*)(0))->Attr_Sw_2),0},
-       { E_CLD_ATTRSW_ATTR_SW3,                    E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT32,      (uint32)(&((tsCluster_AttrSw_Attr*)(0))->Attr_Sw_3),0},
-       { E_CLD_ATTRSW_ATTR_SW4,                    E_ZCL_AF_RD|E_ZCL_AF_RP,            E_ZCL_UINT32,      (uint32)(&((tsCluster_AttrSw_Attr*)(0))->Attr_Sw_4),0}
-   };
+
 
 
 tsSen_Status_Data  	 sSen_Status_Data;
@@ -264,8 +250,6 @@ void DevInf_init(void)
 	 sCluster_Basic_Attr.sM_Hv=sEP_Dev_Inf.sM_Hv;
 	 sCluster_Basic_Attr.sM_Sv=sEP_Dev_Inf.sM_Sv;
 	 sCluster_Basic_Attr.Serve_CompanyCode=sEP_Dev_Inf.Serve_CompanyCode;
-	 sCluster_Basic_Attr.sS_YCL=sEP_Dev_Inf.sS_YCL;
-	 sCluster_Basic_Attr.sS_Hv=sEP_Dev_Inf.sS_Hv;
 	 sCluster_Basic_Attr.sS_Sv=sEP_Dev_Inf.sS_Sv;
 
 }
@@ -285,8 +269,8 @@ OS_TASK(APP_taskuart)
     		 break;
     		 //发送设备信息
     	 case APP_U_EVENT_ESEND_DEV_INFO:
-    		 /*发送设备信息*/
-    		 //发送基本的设备信息
+    		 app_SendDveInf();
+    		 app_SendSW_Model();
     		 break;
     		 /*设备退网*/
     	 case APP_U_EVENT_JOINORUNJOIN:
@@ -294,7 +278,6 @@ OS_TASK(APP_taskuart)
     		 if(ZPS_E_SUCCESS!=ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
     		 {
     			 DBG_vPrintf(TRACE_APP_UART, "app_Leave_new_faild");
-
     		 }
     		 app_vStartNodeFactoryNew();//重新入网
     		 DBG_vPrintf(TRACE_APP_UART, "app_joinorleave123");
@@ -316,16 +299,13 @@ OS_TASK(APP_taskuart)
     	 case  APP_U_EVENT_UPDATE_DEV_INFO://更新设备信息
     		 sEP_Dev_Inf.Data_valid=VALID_VALUE;
     		 sEP_Dev_Inf.S_valid_flag=VALID_VALUE ;
-    		 sEP_Dev_Inf.sM_YCL.YCL_ID=sSenDev_inf.Dev_YCLID+1;
+    		 sEP_Dev_Inf.sM_YCL.sYCL.YCL_ID=sSenDev_inf.Dev_YCLID;
     		 sEP_Dev_Inf.Serve_CompanyCode=sSenDev_inf.Dev_Serve_CompanyCode;
-    		 sEP_Dev_Inf.sM_Hv.Hv_YCL_ID=sSenDev_inf.Dev_YCLID+1;
-    		 sEP_Dev_Inf.sM_Sv.Sv_YCL_ID=sSenDev_inf.Dev_YCLID+1;
-    		 sEP_Dev_Inf.sS_Hv.Hv_YCL_ID=sSenDev_inf.Dev_YCLID;
-    		 sEP_Dev_Inf.sS_Hv.Hv_Array[5]=(sEP_Dev_Inf.sS_Hv.Hv_Array[5]&0xF0)+(sSenDev_inf.Dev_HvCode&0x0F);//传感模块的硬件版本主要由技术属性的前1字节的后4bit确定
-    		 sEP_Dev_Inf.sS_Sv.Sv_YCL_ID=sSenDev_inf.Dev_YCLID;
-    		 sEP_Dev_Inf.sS_Sv.Sv_Mainv_Num=sSenDev_inf.Dev_SvCode;//传感模块的软件版本号主要由主版本号确定
-    		 sEP_Dev_Inf.sS_YCL.YCL_ID=sSenDev_inf.Dev_YCLID;
-    		 sEP_Dev_Inf.sS_YCL.Mac=(uint64)sSenDev_inf.Dev_NumID;
+    		 sEP_Dev_Inf.sM_Hv.sHard_Ver.Hv_YCL_ID=sSenDev_inf.Dev_YCLID;
+    		 sEP_Dev_Inf.sM_Sv.sSoft_Ver.Sv_YCL_ID=sSenDev_inf.Dev_YCLID;
+    		 sEP_Dev_Inf.sS_Sv.sSoft_Ver.Sv_YCL_ID=sSenDev_inf.Dev_YCLID;
+    		 sEP_Dev_Inf.sS_Sv.sSoft_Ver.Sv_Mainv_Num=sSenDev_inf.Dev_SvCode;//传感模块的软件版本号主要由主版本号确定
+
 
     		 //更新Basic ClusterID的相关属性
     		 sCluster_Basic_Attr.sM_YCL=sEP_Dev_Inf.sM_YCL;
@@ -334,8 +314,6 @@ OS_TASK(APP_taskuart)
     		 sCluster_Basic_Attr.sM_Hv=sEP_Dev_Inf.sM_Hv;
     		 sCluster_Basic_Attr.sM_Sv=sEP_Dev_Inf.sM_Sv;
     		 sCluster_Basic_Attr.Serve_CompanyCode=sEP_Dev_Inf.Serve_CompanyCode;
-    		 sCluster_Basic_Attr.sS_YCL=sEP_Dev_Inf.sS_YCL;
-    		 sCluster_Basic_Attr.sS_Hv=sEP_Dev_Inf.sS_Hv;
     		 sCluster_Basic_Attr.sS_Sv=sEP_Dev_Inf.sS_Sv;
 
     		 sLinkKey=Linkkey_Calculate(sEP_Dev_Inf.sM_YCL);//计算链接密钥
@@ -398,40 +376,6 @@ PUBLIC bool  app_SendsSatusDate(void)
 	volatile uint16 u16PayloadSize=0;
 	PDUM_thAPduInstance hAPduInst;
 
-	//更新设备状态信息
-	if(ZCL_IS_BIT_SET(zbmap16,sSen_Status_Data.dev_state,CLD_IASZONE_STATUS_MASK_ALARM1))
-	{
-		teZCL_Status eStatus=app_IASZoneUpdateZoneStatus  (
-				    	  									ZONE_ZONE_ENDPOINT,
-				    	  			                        CLD_IASZONE_STATUS_MASK_ALARM1,
-				    	  			                        TRUE);//更新设备状态信息
-	}
-	else
-	{
-		teZCL_Status eStatus=app_IASZoneUpdateZoneStatus  (
-		    	  											ZONE_ZONE_ENDPOINT,
-		    	  											CLD_IASZONE_STATUS_MASK_ALARM1,
-		    	  											FALSE);//更新设备状态信息
-	}
-	//更新电池报警信息
-	if(sSen_Status_Data.dev_power_state<=DEF_LOW_POWER_VALUE)
-	{
-		teZCL_Status eStatus=app_IASZoneUpdateZoneStatus  (
-				    	  									ZONE_ZONE_ENDPOINT,
-				    	  									CLD_IASZONE_STATUS_MASK_BATTERY,
-				    	  									TRUE);//更新设备状态信息
-	}
-	else
-	{
-
-		teZCL_Status eStatus=app_IASZoneUpdateZoneStatus  (
-						    	  							ZONE_ZONE_ENDPOINT,
-						    	  							CLD_IASZONE_STATUS_MASK_BATTERY,
-						    	  							FALSE);//更新设备状态信息
-	}
-	//更新设备电量信息
-	teZCL_Status eStatus=app_IASZoneAppPowerValueUpdate (ZONE_ZONE_ENDPOINT,sSen_Status_Data.dev_power_state);
-
 	tuAddress.u16Addr=0;
 	psProfileDataReq1.uDstAddr=tuAddress;
 	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
@@ -463,29 +407,20 @@ PUBLIC bool  app_SendsSatusDate(void)
 	      if(old_send_type==FALSE)
 	      {
 
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_TYPE);//ID
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_ENUM16);//enum16 data_type
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sEP_Dev_Inf.M_ClusterID);//data
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_STATUS);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_BMAP16);//map16
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sSen_Status_Data.dev_state);//设备状态
 
 
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_STATUS);//ID
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_BMAP16);//map16
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sSen_Status_Data.dev_state);//设备状态
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_APP_POWER_VALUE);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT8);//map16
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_power_state);//电池电量
 
 
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_APP_POWER_VALUE);//ID
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT8);//map16
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_power_state);//电池电量
 
-
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ATTR_ID_ZONE_APP_DEV_ID);//ID
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT64);//map16
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "l",Dev_IeeeAddr);//设备MAC地址
-
-
-	       PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
-	       ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
-	       app_SendDveInf();
+	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+	    	  app_SendDveInf();
 
 	      }
 	      //以前的数据格式
@@ -497,10 +432,10 @@ PUBLIC bool  app_SendsSatusDate(void)
 	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_state);//设备状态
 	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "l",Dev_IeeeAddr);//设备MAC地址
 
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x23",sEP_Dev_Inf.sM_YCL.YCL_Array);//设备MAC地址
+	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uYcl));//YCL长度
+	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0c",sEP_Dev_Inf.sM_YCL.YCL_Array);//设备MAC地址
 	       PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 	       ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
-	       //
 	      }
 	      return TRUE;
 	   }
@@ -508,41 +443,168 @@ PUBLIC bool  app_SendsSatusDate(void)
 }
 
 
+/*发送设备的基本信息
+ *
+ * 发送的属性排列顺序:YCL  ClusterID  心跳时间    通信模块的软件版本    硬件版本   传感器的软件版本
+ * 发送的属性的顺序不能改变，后期如果想添加其他设备信息，可以在最后添加。
+ */
 PUBLIC bool  app_SendDveInf(void)
 {
-	tsZCL_Address  sDesZCL_Address;
+	ZPS_tsAfProfileDataReq psProfileDataReq1;
+	ZPS_tuAddress  tuAddress;
+	static uint8 sqen=1;
+	bool old_send_type=TRUE;
+	volatile uint16 u16PayloadSize=0;
 	PDUM_thAPduInstance hAPduInst;
 
-	teZCL_Status eStatus=app_IASZoneUpdateZoneStatus  (
-														ZONE_ZONE_ENDPOINT,
-			                                			CLD_IASZONE_STATUS_MASK_ALARM1,
-			                                			TRUE);//更新设备状态信息
-	app_IASZoneAppPowerValueUpdate (1,0x18);
-	DBG_vPrintf(TRACE_APP_UART,"eCLD_IASZoneUPDataReqSend status =%d",eStatus);
-	app_IASZoneAppPowerValueUpdate (1,0x18);
-	sDesZCL_Address.eAddressMode=E_ZCL_AM_SHORT;
-	sDesZCL_Address.uAddress.u16DestinationAddress=0x0000;
-	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduZCL);
-	teZCL_Status eStatu=eZCL_ReportAttribute(
-												&sDesZCL_Address,
-												HOME_AUTOMATION_IASZONE_CLUSTER_ID,
-												E_CLD_IASZONE_ATTR_ID_ZONE_APP_POWER_VALUE  ,
-												1,
-												1,
-												hAPduInst);
-	DBG_vPrintf(TRACE_APP_UART,"eCLD_IASZonereport-attributstatus =%d",eStatu);
+	teZCL_Status eStatus=app_IASZoneAppPowerValueUpdate (ZONE_ZONE_ENDPOINT,sSen_Status_Data.dev_power_state);
 
-	//入网成功以后发送设备的基本信息：软件版本、硬件版本、供电描述、YCL(FF00)、FF01(ClusterID)、传感设备的YCL(需要吗)、FF02传感设备的软件版本、传感器设备的硬件版本，
+	tuAddress.u16Addr=0;
+	psProfileDataReq1.uDstAddr=tuAddress;
+	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
+	psProfileDataReq1.u16ClusterId=0x0000;//
+	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
+	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
+	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
+	psProfileDataReq1.u8DstEp=1;
+	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.u8Radius=0;
+	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduMyData);
+	if(hAPduInst == NULL)
+	 {
+		/*申请内存不成功*/
+		return FALSE;
+
+	 }
+	 else
+	 {
+		  sqen = u8GetTransactionSequenceNumber();
+		  u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
+										 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
+										 FALSE,
+										 ZCL_MANUFACTURER_CODE,
+										 TRUE,
+										 TRUE,
+										 &sqen,
+										 E_ZCL_REPORT_ATTRIBUTES);
+
+
+		DBG_vPrintf(TRACE_APP_UART,"Send device information");
+
+
+		//设备YCL
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_M_YCL);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uYcl));//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0c",sCluster_Basic_Attr.sM_YCL);
+
+		//clusterID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_M_CLUSTERID);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT16);//map16
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sCluster_Basic_Attr.M_ClusterID);
+
+		//心跳周期
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_HEARTBEAT_VALUE);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT16);//map16
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sCluster_Basic_Attr.heartbeat_value);
+		//通讯模块软件版本
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_M_SV);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uSoft_Ver));//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0a",sCluster_Basic_Attr.sM_Sv);
+
+		//通讯模块硬件版本
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_M_HV);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uHard_Ver));//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0b",sCluster_Basic_Attr.sM_Hv);
+
+		//传感器软件版本
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_S_SV);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uSoft_Ver));//str
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0a",sCluster_Basic_Attr.sS_Sv);
+
+
+		PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+		ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+	 }
+
 
 	return TRUE;
 }
 
-PUBLIC void  app_IASZoneSendSatusDate (uint8   u8SourceEndPoint)
+
+/*
+ * 发送设备的转换模型
+ *
+ */
+
+PUBLIC bool  app_SendSW_Model(void)
 {
+	ZPS_tsAfProfileDataReq psProfileDataReq1;
+	ZPS_tuAddress  tuAddress;
+	uint8 i=0;
+	static uint8 sqen=1;
+	volatile uint16 u16PayloadSize=0;
+	PDUM_thAPduInstance hAPduInst;
+	sEnd_SW_Model asEnd_SW_Model[4]={
+			{E_CLD_IASZONE_ZONE_POWER_VALUE,0x01},
+			{E_CLD_IASZONE_ZONE_RSSI,0x02},
+			{E_CLD_IASZONE_STATUS,0x03},
+			{E_CLD_IASZONE_ZONE_HEARTBEAT_TIME,0x04}
+	};
+	tuAddress.u16Addr=0;
+	psProfileDataReq1.uDstAddr=tuAddress;
+	DBG_vPrintf(TRACE_APP_UART, "send SW Model");
+	psProfileDataReq1.u16ClusterId=0x0000;//basic clusterID
+	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
+	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
+	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
+	psProfileDataReq1.u8DstEp=1;
+	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.u8Radius=0;
+	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduMyData);
+	if(hAPduInst == NULL)
+	{
+			/*申请内存不成功*/
+		return FALSE;
 
-	//app_IASZoneUpdate(ZONE_ZONE_ENDPOINT);
+	}
+	else
+	{
+		sqen = u8GetTransactionSequenceNumber();
+		u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
+		                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
+		        		                     FALSE,
+		        		                     ZCL_MANUFACTURER_CODE,
+		        		                     TRUE,
+		        		                     TRUE,
+		        		                     &sqen,
+		        		                     E_ZCL_REPORT_ATTRIBUTES);
 
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_M_CLUSTERID);//ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT16);//enum16 data_type
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sEP_Dev_Inf.M_ClusterID);//data
+
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_BASIC_SW_MODEL);//ID
+	    u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_OSTRING);//enum16 data_type
+
+	    for(i=0; i<4 ;i++)
+	    {
+	    	u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",asEnd_SW_Model[i].zattrID);//zigbee attrID
+	    	u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",asEnd_SW_Model[i].CattrID);//CJP attrID
+	    }
+
+		PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+		ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+
+
+	}
+	return TRUE;
 }
+
+
 PUBLIC void app_UartSendMesg(APP_uartEventType  type)
 {
 	APP_uartEvent sUartEvent;

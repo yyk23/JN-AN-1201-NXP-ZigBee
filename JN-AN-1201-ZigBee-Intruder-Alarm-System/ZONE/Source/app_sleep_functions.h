@@ -59,7 +59,7 @@
 #define PERIODIC_WAKE
 
 #ifdef PERIODIC_WAKE
-#define SLEEP_TIME_IN_SECS          60    //设置睡眠的单位时间为1分钟，即最少1分钟
+#define SLEEP_TIME_IN_SECS          20    //设置睡眠的单位时间为1分钟，即最少1分钟
 #define SLEEP_PERIOD                (32768 * SLEEP_TIME_IN_SECS)
 #endif
 
@@ -68,7 +68,7 @@
 #else
     #define SLEEP_INFO TRUE
 #endif
-#define ACTIVE_TIME          400  //唤醒以后的最少活跃时间400ms
+#define ACTIVE_TIME            2000  //唤醒以后的最少活跃时间400ms
 PUBLIC pwrm_tsWakeTimerEvent   sWake;
 /****************************************************************************/
 /***        Type Definitions                                              ***/

@@ -155,7 +155,7 @@ PUBLIC void vScheduleSleep(void)
 {
 
 	//进入低功耗前
-	/*
+
 	if(sDeviceDesc.eNodeState==E_RUNNING)//设备在正在运行
 	{
 		if( !App_BusyRead() )
@@ -164,11 +164,11 @@ PUBLIC void vScheduleSleep(void)
 		vStopSWTimers();
 
 		#ifdef PERIODIC_WAKE
-		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value , vAppWakeCallBack  );     /* Schedule the next sleep point */
-	/*
+		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat , vAppWakeCallBack  );     /* Schedule the next sleep point */
+
 		if(!teStatus)
 		{
-			DBG_vPrintf(SLEEP_INFO, "\r\n Scheduling sleep point in %d Min, status = %d\n",sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value,teStatus);
+			DBG_vPrintf(SLEEP_INFO, "\r\n Scheduling sleep point in %d Min, status = %d\n",sEP_Dev_Inf.sEP_Dev_HeartBeat,teStatus);
 		}
 		else
 		{
@@ -183,20 +183,20 @@ PUBLIC void vScheduleSleep(void)
 		DBG_vPrintf(SLEEP_INFO, "\r\n E_startup0");
 		vStopSWTimers();
 		OS_eStopSWTimer(APP_ActiveTime);//强制进入低功耗模式
-		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value , vAppWakeCallBack  );//设备在入网失败，进入低功耗，只有外部中断才可以唤醒 。
+		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat, vAppWakeCallBack  );//设备在入网失败，进入低功耗，只有外部中断才可以唤醒 。
 
 	}
 	else if(sDeviceDesc.eNodeState==E_REJOINING)
 	{
 		vStopSWTimers();
 		OS_eStopSWTimer(APP_ActiveTime);//强制进入低功耗模式
-		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat.heartbeat_value , vAppWakeCallBack  );
+		PWRM_teStatus teStatus = PWRM_eScheduleActivity(&sWake, SLEEP_PERIOD*sEP_Dev_Inf.sEP_Dev_HeartBeat , vAppWakeCallBack  );
 	}
 	else
 	{
 
 	}
-	*/
+
 
 
 }

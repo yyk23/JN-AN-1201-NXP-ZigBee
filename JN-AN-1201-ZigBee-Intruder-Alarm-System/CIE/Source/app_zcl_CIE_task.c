@@ -222,7 +222,7 @@ PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
         break;
 
     case E_ZCL_CBET_UNHANDLED_EVENT:
-        DBG_vPrintf(TRACE_ZCL, "\nEVT: Unhandled Event\r\n");
+        DBG_vPrintf(TRACE_ZCL, "\nEVT:General Unhandled Event\r\n");
         break;
 
     case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
@@ -273,9 +273,11 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
 
     DBG_vPrintf(TRACE_ZCL, "\nEntering cbZCL_Endpoint 1 Callback");
-    uYcl tycl;
-    uint16 tclusterID;
-    uint16 tattrID;
+    DBG_vPrintf(TRACE_ZCL, "eEventType %02x\n" ,psEvent->eEventType);
+    static uYcl tycl;
+    static uint16 netaddr;
+    static uint16 tclusterID;
+    static uint16 tattrID;
     static uint16 u16Length=0;
     static eZCL_Frametype ZCL_Frametype=0;
     static uint8 cjp_commandID=0;
@@ -290,7 +292,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         break;
 
     case E_ZCL_CBET_UNHANDLED_EVENT:
-        /* DBG_vPrintf(TRACE_ZCL, "\nEP EVT: Unhandled event");*/
+         DBG_vPrintf(TRACE_ZCL, "\nEP EVT:Endpoint Unhandled event");
         break;
 
         //收到上报attribute，对每一个attribute产生一个此消息.
@@ -302,16 +304,27 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
     	uint16    u16SizeOfAttribute = 0;
         uint8     u16Elements =  0;
         uint16    i =  0;
-        DBG_vPrintf(TRACE_ZCL,"Into E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE ");
-        tycl.sYCL.Mac = psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u64Addr;
+        DBG_vPrintf(TRACE_APP_UART,"Into E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE ");
+
+        //根据原地址的类型进行MAC地址的赋值，原地址的类型可能是网络短地址或MAC地址
+        if(psEvent->pZPSevent->uEvent.sApsDataIndEvent.u8SrcAddrMode != 0)
+        {
+        	tycl.sYCL.Mac = ZPS_u64AplZdoLookupIeeeAddr(psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u16Addr);
+        }
+        else
+        {
+        	tycl.sYCL.Mac = psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u64Addr;
+        }
         tclusterID = psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId;
         tattrID  = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
-
+        DBG_vPrintf(TRACE_APP_UART,"tclusterID = %04x" , tclusterID);
+        DBG_vPrintf(TRACE_APP_UART,"tclusterID = %04x" , tattrID);
         //属性的数据格式
         switch ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType )
         {
              case(E_ZCL_OSTRING):
              case(E_ZCL_CSTRING):
+             	 DBG_vPrintf(TRACE_APP_UART,"receive a E_ZCL_OSTRING attr");
              	 if ( psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData != NULL )
              	 {
              		 u16Elements =  ( (uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData ) [ 0 ];
@@ -382,7 +395,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         		if ( u16Elements >0)
         		{
 
-        			ZNC_BUF_U16_UPD(&u8LinkTxBuffer [u16Length], tclusterID, u16Length) ;//属性ID写入BUF
+        			ZNC_BUF_U16_UPD(&u8LinkTxBuffer [u16Length], tattrID, u16Length) ;//属性ID写入BUF
         			ZNC_BUF_U8_UPD(&u8LinkTxBuffer [u16Length], psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType, u16Length) ;//属性数据类型写入BUF
         			if( ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType ==  E_ZCL_OSTRING ) ||
         					( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType ==  E_ZCL_CSTRING ) )
@@ -404,20 +417,23 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         			//uint16
         			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint16) )
         			{
-        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "h",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
-        				u16Length += sizeof(uint16);
+        				ZNC_BUF_U16_UPD( &u8LinkTxBuffer [u16Length],  *((uint16 *)(psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData)), u16Length);
+        				//App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "h",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				//u16Length += sizeof(uint16);
         			}
         			//uint32
         			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint32) )
         			{
-        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "w",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
-        				u16Length += sizeof(uint32);
+        				ZNC_BUF_U32_UPD( &u8LinkTxBuffer [u16Length],  *((uint32 *)(psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData)), u16Length);
+        				//App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "w",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				//u16Length += sizeof(uint32);
         			}
         			//uint64
         			else if ( u16SizeOfAttribute / u16Elements == sizeof(uint64) )
         			{
-        				App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "l",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
-        				u16Length += sizeof(uint64);
+        				ZNC_BUF_U64_UPD( &u8LinkTxBuffer [u16Length], *((uint64 *)(psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData)) , u16Length);
+        				//App_u16BufferReadNBO ( &u8LinkTxBuffer [u16Length],  "l",  psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData);
+        				//u16Length += sizeof(uint64);
         			}
 
 
@@ -445,15 +461,24 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
            //收到已经对单个节点的所有attributes解析完成，生成此消息
     case   E_ZCL_CBET_REPORT_ATTRIBUTES:
     	//根据接收到的帧类型进行处理
+    	DBG_vPrintf(TRACE_APP_UART,"A frame finish ");
+    	DBG_vPrintf(TRACE_APP_UART," MAC address = %16x" , tycl.sYCL.Mac);
+    	DBG_vPrintf(TRACE_APP_UART," clusterID   = %04x" , tclusterID);
+    	DBG_vPrintf(TRACE_APP_UART," commandID   = %02x" , cjp_commandID);
+    	DBG_vPrintf(TRACE_APP_UART," attr num   = %01x" , tattr_num);
+    	DBG_vPrintf(TRACE_APP_UART," bufLength   = %02x" , u16Length);
     	switch(ZCL_Frametype)
     	{
     		case E_ZCL_FRAME_DEV_INF_DATA_REPORT: //设备基本信息上报处理
+    			DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_DEV_INF_DATA_REPORT ");
     			fEndDev_BasicInf_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
     			break;
     		case E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT://设备转换模型处理
+    			DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_DEV_SW_MODEL_DATA_REPORT ");
     			fEndDev_SwModle_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0], tattr_num , u16Length);
     			break;
     		case E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE:// 设备写属性回复处理
+    			DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE ");
     			fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
     			break;
     		case E_ZCL_FRAME_HEART_DATA_REPORT:
@@ -461,6 +486,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
     		case E_ZCL_FRAME_ALARM_DATA_REPORT:
     		case E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE://设备上报属性、读属性回复处理
     		//数组指针  --  数组有效长度   属性个数  ---   命令ID----
+    			DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_NORMAL_DATA_REPORT ");
     			fEndDev_ReportAttr_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
     			break;
     		default :
@@ -973,12 +999,7 @@ PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 co
 	sEnddev_BasicInf tEnddev_BasicInf;
 	sDevJoin_Notice  tDevJoin_Notice;
 	uint16 buflen=0;
-
-
-
-
 	uint8 u8SizeOfAttribute=0;
-
 	uint8 cjp_buflen=0;
 
 	sAttr_Charact tAttr_Charact[6]={
@@ -994,6 +1015,7 @@ PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 co
 	{
 		return CJP_SUCCESS;
 	}
+	tDevJoin_Notice.bJoinType =join_way;
 	buflen+= 3;
 	if(*(sdata+buflen) != sizeof(uYcl))
 	{
@@ -1009,6 +1031,7 @@ PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 co
 
 	buflen+=3;
 	tDevJoin_Notice.HeartCyc= BUILD_UINT16(*(sdata+buflen+1), *(sdata+buflen));
+	DBG_vPrintf(TRACE_APP_UART," HeartCyc = %04x" , tDevJoin_Notice.HeartCyc);
 	buflen+=sizeof(uint16);
 
 	buflen+=3;
@@ -1038,6 +1061,7 @@ PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 co
 	memcpy((uint8 *)&(tDevJoin_Notice.S_Soft_Ver),sdata+buflen,sizeof(uSoft_Ver));
 	buflen+=sizeof(uSoft_Ver);
 
+
 	tEnddev_BasicInf.ycl =tDevJoin_Notice.M_YCL;
 	tEnddev_BasicInf.hearttime =tDevJoin_Notice.HeartCyc;
 	tEnddev_BasicInf.Msoftver = BUILD_UINT16(tDevJoin_Notice.M_Soft_Ver.sSoft_Ver.Sv_Secv_Num , tDevJoin_Notice.M_Soft_Ver.sSoft_Ver.Sv_Mainv_Num );
@@ -1048,7 +1072,7 @@ PUBLIC CJP_Status fEndDev_BasicInf_Handle(uint64 mac ,uint16 clusterID ,uint8 co
 	add_dev_data_manage(tEnddev_BasicInf);
 	//向JNI层发送设备入网通知。
 	Frame_Seq++;
-	cjp_buflen = fCJP_Attr_Handle(&u8cjpTxBuffer[0] , (uint8 *)&tDevJoin_Notice, tAttr_Charact );
+	cjp_buflen = fCJP_Attr_Handle(&u8cjpTxBuffer[0] , (uint8 *)&tDevJoin_Notice, tAttr_Charact , 6);
 	return fCJP_Tx_Coor(CIE_Ycl , CJP_DEV_JOINED_NOTICE, &u8cjpTxBuffer[0] , cjp_buflen); //通知上层设备添加成功
 
 }
@@ -1072,7 +1096,6 @@ PUBLIC CJP_Status fEndDev_SwModle_Handle(uint64 mac ,uint16 clusterID ,uint8 com
 	uint8 cjp_attrnum=0;
 	uint8 len=0,i=0;
 	tclusterID = BUILD_UINT16(*(sdata+4), *(sdata+3));
-
 	len =  *(sdata+8);
 	if((len%3) == 0)
 	{
@@ -1086,12 +1109,35 @@ PUBLIC CJP_Status fEndDev_SwModle_Handle(uint64 mac ,uint16 clusterID ,uint8 com
 	tModel_Array.Attr_Model[0].head.clusterID =tclusterID;
 	for(i=0 ; i<cjp_attrnum ;i++)
 	{
-		tModel_Array.Attr_Model[i+1].attr.zattrID = BUILD_UINT16(*(sdata+10+cjp_attrnum*i), *(sdata+9+cjp_attrnum*i));
-		tModel_Array.Attr_Model[i+1].attr.CattrID = *(sdata+11+cjp_attrnum*i);
+		tModel_Array.Attr_Model[i+1].attr.zattrID = BUILD_UINT16(*(sdata+10+3*i), *(sdata+9+3*i));
+		tModel_Array.Attr_Model[i+1].attr.CattrID = *(sdata+11+3*i);
 	}
 
 	if(add_dev_model_data_manage( tModel_Array))//添加模型
 	{
+
+	   DBG_vPrintf(TRACE_APP_UART," Save Sw model success ");
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.clusterID %04x \n " ,tModel_Array.Attr_Model[0].head.clusterID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.attrnum   %02x \n " ,tModel_Array.Attr_Model[0].head.attrnum);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.CattrID   %02x \n " ,tModel_Array.Attr_Model[1].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.zattrID   %04x \n " ,tModel_Array.Attr_Model[1].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.CattrID   %02x \n " ,tModel_Array.Attr_Model[2].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.zattrID   %04x \n " ,tModel_Array.Attr_Model[2].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.CattrID   %02x \n " ,tModel_Array.Attr_Model[3].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.zattrID   %04x \n " ,tModel_Array.Attr_Model[3].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.CattrID   %02x \n " ,tModel_Array.Attr_Model[4].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.zattrID   %04x \n " ,tModel_Array.Attr_Model[4].attr.zattrID);
+
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.clusterID %04x \n " ,Attr_Model_Array[0].Attr_Model[0].head.clusterID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.attrnum   %02x \n " ,Attr_Model_Array[0].Attr_Model[0].head.attrnum);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.CattrID   %02x \n " ,Attr_Model_Array[0].Attr_Model[1].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.zattrID   %04x \n " ,Attr_Model_Array[0].Attr_Model[1].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.CattrID   %02x \n " ,Attr_Model_Array[0].Attr_Model[2].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.zattrID   %04x \n " ,Attr_Model_Array[0].Attr_Model[2].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.CattrID   %02x \n " ,Attr_Model_Array[0].Attr_Model[3].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.zattrID   %04x \n " ,Attr_Model_Array[0].Attr_Model[3].attr.zattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.CattrID   %02x \n " ,Attr_Model_Array[0].Attr_Model[4].attr.CattrID);
+	   DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.zattrID   %04x \n " ,Attr_Model_Array[0].Attr_Model[4].attr.zattrID);
 	   return CJP_SUCCESS;
 	}
 	return CJP_ERROR;
@@ -1115,6 +1161,7 @@ PUBLIC CJP_Status fEndDev_WriteAttr_Resp_Handle(uint64 mac ,uint16 clusterID ,ui
 	uint8 place=0;
 	uYcl ycl;
 
+	ycl.sYCL.Mac = mac;
 	if(ZPS_u16AplZdoLookupAddr(mac)==0x0000)
 	{
 		return CJP_ERROR;
@@ -1165,11 +1212,12 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 	uint16 u16SizeOfAttribute=0;
 	uint8 cjp_attrID=0;
 	uint8 cjp_buflen=0;
-	uYcl ycl;
-
+	uYcl ycl ;
+	ycl.sYCL.Mac = mac;
+	DBG_vPrintf(TRACE_APP_UART,"Into Report  device status data \n");
 	if(ZPS_u16AplZdoLookupAddr(mac)==0x0000)
 	{
-
+		DBG_vPrintf(TRACE_APP_UART,"Cannot find device mac  \n");
 		return CJP_ERROR;
 	}
 	//进行属性ID的转换处理
@@ -1177,17 +1225,42 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 	place = LocateElem(&Galist,ycl);
 	if(place == 0)
 	{
+		DBG_vPrintf(TRACE_APP_UART,"Cannot find device in device list  \n");
 		return CJP_ERROR;
 	}
 
 	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
 	{
+		DBG_vPrintf(TRACE_APP_UART,"Cannot find device basic information  \n");
 	    return CJP_ERROR;
 	}
 	if(!get_dev_model(tEnddev_BasicInf.clusterID, &tAttr_Model_Array))
 	{
+		DBG_vPrintf(TRACE_APP_UART,"Cannot find device SW model  \n");
 	    return CJP_ERROR;
 	}
+	//打印找到的设备基本信息和模型信息
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information Factcode %04x" ,tEnddev_BasicInf.Factcode);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information Hardver %04x" ,tEnddev_BasicInf.Hardver);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information Msoftver %04x" ,tEnddev_BasicInf.Msoftver);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information Ssoftver %04x" ,tEnddev_BasicInf.Ssoftver);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information clusterID %04x" ,tEnddev_BasicInf.clusterID);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information hearttime %04x" ,tEnddev_BasicInf.hearttime);
+	DBG_vPrintf(TRACE_APP_UART,"Device basic information YCL ");
+	printf_array(&tEnddev_BasicInf.ycl  , sizeof(uYcl));
+
+
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.clusterID %04x \n " ,tAttr_Model_Array.Attr_Model[0].head.clusterID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[0].head.attrnum   %02x \n " ,tAttr_Model_Array.Attr_Model[0].head.attrnum);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.CattrID   %02x \n " ,tAttr_Model_Array.Attr_Model[1].attr.CattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[1].attr.zattrID   %04x \n " ,tAttr_Model_Array.Attr_Model[1].attr.zattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.CattrID   %02x \n " ,tAttr_Model_Array.Attr_Model[2].attr.CattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[2].attr.zattrID   %04x \n " ,tAttr_Model_Array.Attr_Model[2].attr.zattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.CattrID   %02x \n " ,tAttr_Model_Array.Attr_Model[3].attr.CattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[3].attr.zattrID   %04x \n " ,tAttr_Model_Array.Attr_Model[3].attr.zattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.CattrID   %02x \n " ,tAttr_Model_Array.Attr_Model[4].attr.CattrID);
+	DBG_vPrintf(TRACE_APP_UART,"Attr_Model[4].attr.zattrID   %04x \n " ,tAttr_Model_Array.Attr_Model[4].attr.zattrID);
+
 	u8cjpTxBuffer[cjp_buflen] = u8attrnum*2;
 	cjp_buflen++;
 	if(u8attrnum !=0)
@@ -1199,6 +1272,7 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 				return CJP_ERROR;
 			}
 			tattrID = BUILD_UINT16(*(sdata+buflen+1), *(sdata+buflen));
+			printf_array(sdata  , u16len);
 			buflen += 2;
 			datatype = *(uint8 *)(sdata+buflen);
 			buflen++;
@@ -1215,6 +1289,8 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 			}
 			u16SizeOfAttribute =  APP_u16GetAttributeActualSize (datatype, u16Elements );//属性的数据长度
 			cjp_attrID = get_CJP_attrID(&tAttr_Model_Array , tattrID);
+			DBG_vPrintf(TRACE_APP_UART,"Zigbee attrID  %04x \n " ,tattrID);
+			DBG_vPrintf(TRACE_APP_UART,"cjp attrID   %02x \n " ,cjp_attrID);
 			u8cjpTxBuffer[cjp_buflen] = E_ZCL_UINT8;
 			cjp_buflen++;
 			u8cjpTxBuffer[cjp_buflen] = cjp_attrID;
@@ -1230,7 +1306,10 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 		{
 			Frame_Seq++;
 		}
-		return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] , cjp_buflen+1);
+
+	    DBG_vPrintf(TRACE_APP_UART,"Report  device status data success %02x" ,cjp_buflen);
+	    printf_array(&u8cjpTxBuffer[0],cjp_buflen);
+		return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] , cjp_buflen);
 	}
 
 

@@ -95,7 +95,7 @@
 /***        Local Function Prototypes                                     ***/
 /****************************************************************************/
 
-PRIVATE void app_vStartNodeFactoryNew(void);
+//PRIVATE void app_vStartNodeFactoryNew(void);
 PRIVATE void vHandleStartUp( ZPS_tsAfEvent *pZPSevent );
 PRIVATE void vHandleRunningEvent(ZPS_tsAfEvent *sStackEvent);
 PRIVATE void vDeletePDMOnButtonPress(uint8 u8ButtonDIO);
@@ -108,6 +108,8 @@ PRIVATE bool_t bTransportKeyDecider(uint16 u16ShortAddr, uint64 u64DeviceAddress
 /***        Exported Variables                                            ***/
 /****************************************************************************/
 extern uint8 u8Flash;
+
+uint8 join_way=0 ;
 
 PUBLIC  uint8 s_au8LnkKeyArray[16] = {0x5a, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6c,
         0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x30, 0x39};
@@ -163,7 +165,9 @@ PUBLIC void APP_vInitialiseNode(void)
      * e.g. bDeleteRecords = vCheckButtons();
      * Alternatively, always call PDM_vDelete() if context saving is not required.
      */
-
+	uint8 tchannel=0 ;
+	uint16	bytenum=0;
+	PDM_teStatus tchannel_pdm=0;
     // APP_bButtonInitialise();
      vDeletePDMOnButtonPress(APP_BUTTONS_BUTTON_1);
 
@@ -177,6 +181,19 @@ PUBLIC void APP_vInitialiseNode(void)
     /* Initialise ZBPro stack */
     ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&s_au8LnkKeyArray, 0x00, ZPS_APS_GLOBAL_LINK_KEY);
 
+	/*Fix the channel for testing purpose*/
+	tchannel_pdm = PDM_eReadDataFromRecord(   PDM_ID_CIE_CHANNEL, &tchannel,sizeof(uint8), &bytenum);
+
+	DBG_vPrintf(TRACE_APP_UART,"\ntchannel_pdm= 0x%02x\n",tchannel_pdm);
+	DBG_vPrintf(TRACE_APP_UART,"\nset channel = 0x%02x\n",tchannel);
+	ZPS_eAplAibSetApsChannelMask(1<<18);
+	if((tchannel>=0x0B) &&(tchannel<=0x1A))
+	{
+	  DBG_vPrintf(TRACE_APP_UART,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
+	  ZPS_eAplAibSetApsChannelMask(1<<tchannel);
+	  DBG_vPrintf(TRACE_APP_UART,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
+	}
+
     /* Store channel mask */
     vEZ_RestoreDefaultAIBChMask();
 
@@ -187,11 +204,17 @@ PUBLIC void APP_vInitialiseNode(void)
     vEZ_SetDefaultAIBChMask();
 
     /*Fix the channel for testing purpose*/
-    #if (defined FIX_CHANNEL)
-       DBG_vPrintf(TRACE_CIE_NODE,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
-       ZPS_eAplAibSetApsChannelMask(1<<FIX_CHANNEL);
-       DBG_vPrintf(TRACE_CIE_NODE,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
-    #endif
+    tchannel_pdm = PDM_eReadDataFromRecord(   PDM_ID_CIE_CHANNEL, &tchannel,sizeof(uint8), &bytenum);
+
+    DBG_vPrintf(TRACE_APP_UART,"\ntchannel_pdm= 0x%02x\n",tchannel_pdm);
+    DBG_vPrintf(TRACE_APP_UART,"\nset channel = 0x%02x\n",tchannel);
+    ZPS_eAplAibSetApsChannelMask(1<<18);
+    if((tchannel>=0x0B) &&(tchannel<=0x1A))
+    {
+       DBG_vPrintf(TRACE_APP_UART,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
+       ZPS_eAplAibSetApsChannelMask(1<<tchannel);
+       DBG_vPrintf(TRACE_APP_UART,"\nCurrent Channel = 0x%08x\n",ZPS_psAplAibGetAib()->apsChannelMask);
+    }
 
     /* Initialise ZCL */
     APP_ZCL_vInitialise();
@@ -299,35 +322,43 @@ PRIVATE  void vHandleStackEvent( ZPS_tsAfEvent sStackEvent )
         break;
 
         case ZPS_EVENT_NWK_STATUS_INDICATION:
-            DBG_vPrintf(TRACE_CIE_NODE, "\nNwkStat: Addr:%x Status:%x",
+            DBG_vPrintf(TRACE_APP_UART, "\nNwkStat: Addr:%x Status:%x",
                 sStackEvent.uEvent.sNwkStatusIndicationEvent.u16NwkAddr,
                 sStackEvent.uEvent.sNwkStatusIndicationEvent.u8Status);
         break;
 
         case ZPS_EVENT_NWK_STARTED:
         	fBuildNet_Notice(CJP_SUCCESS) ;
-            DBG_vPrintf(TRACE_CIE_NODE, "\nZPS_EVENT_NWK_STARTED\n");
+            DBG_vPrintf(TRACE_APP_UART, "\nZPS_EVENT_NWK_STARTED\n");
             ZPS_eAplZdoPermitJoining(0xff);
         break;
 
         case ZPS_EVENT_NWK_FAILED_TO_START:
         	//建网失败
-
-            DBG_vPrintf(TRACE_CIE_NODE, "\nZPS_EVENT_NWK_FAILED_TO_START\n");
+        	fBuildNet_Notice(CJP_ERROR) ;
+            DBG_vPrintf(TRACE_APP_UART, "\nZPS_EVENT_NWK_FAILED_TO_START\n");
         break;
 
         case ZPS_EVENT_NWK_NEW_NODE_HAS_JOINED:
         	//新设备入网
 
         	ZPS_eAplZdoPermitJoining(0x00);//关闭入网许可
-        	/*
-        	sStackEvent.uEvent.sNwkJoinIndicationEvent.u16NwkAddr
-        	sStackEvent.uEvent.sNwkJoinIndicationEvent.u64ExtAddr
-        	sStackEvent.uEvent.sNwkJoinIndicationEvent.u8Rejoin
-        	*/
-            DBG_vPrintf(TRACE_CIE_NODE, "\nZPS_EVENT_NWK_NEW_NODE_HAS_JOINED\n");
-        break;
+        	join_way = sStackEvent.uEvent.sNwkJoinIndicationEvent.u8Rejoin;//设备的入网方式 ：Join(0)  or rejoin(1)
 
+            DBG_vPrintf(TRACE_APP_UART, "\nZPS_EVENT_NWK_NEW_NODE_HAS_JOINED\n");
+        break;
+        case ZPS_EVENT_NWK_LEAVE_INDICATION:
+        	DBG_vPrintf(TRACE_APP_UART, "\ZPS_EVENT_NWK_LEAVE_INDICATION\n");//
+        	if( fDev_Leave_Notice(sStackEvent.uEvent.sNwkLeaveIndicationEvent.u64ExtAddr)==CJP_SUCCESS)
+        	{
+        		DBG_vPrintf(TRACE_APP_UART, "A device leave net success\n");//
+        	}
+        	else
+        	{
+        		DBG_vPrintf(TRACE_APP_UART, "A device leave net error\n");//
+        	}
+
+        	break;
         case ZPS_EVENT_NWK_FAILED_TO_JOIN:
         	//入网失败
             DBG_vPrintf(TRACE_CIE_NODE, "\nZPS_EVENT_NWK_FAILED_TO_JOIN - %x \n",sStackEvent.uEvent.sNwkJoinFailedEvent.u8Status);
@@ -371,7 +402,7 @@ PUBLIC void app_vRestartNode (void)
     /* Store the NWK frame counter increment */
     ZPS_vSaveAllZpsRecords();
 
-    DBG_vPrintf(TRACE_CIE_NODE, "Restart Running\n");
+    DBG_vPrintf(TRACE_APP_UART, "Restart Running\n");
     OS_eActivateTask(APP_taskCIE);
 
 }
@@ -388,7 +419,7 @@ PUBLIC void app_vRestartNode (void)
  * void
  *
  ****************************************************************************/
-PRIVATE void app_vStartNodeFactoryNew(void)
+PUBLIC void app_vStartNodeFactoryNew(void)
 {
     /* The node is in running state indicates that
      * the EZ Mode state is as E_EZ_SETUP_START*/

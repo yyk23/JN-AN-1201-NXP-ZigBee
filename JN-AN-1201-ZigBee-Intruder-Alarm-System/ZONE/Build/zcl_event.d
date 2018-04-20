@@ -23,6 +23,12 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/string.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/cdefs.h \
  c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/string.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg_uart.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi_JN5169.h \
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi_JN516x.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_apl.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/PDUM/Include/pdum_common.h \
@@ -65,8 +71,7 @@ c:/NXP/bstudio_nxp/workspace/JN-AN-1201-YCL/JN-AN-1201-ZigBee-Intruder-Alarm-Sys
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Source/zcl_internal.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_heap.h \
  c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/dlist.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h \
- c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h
+ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/Common/Include/jendefs.h:
 
@@ -113,6 +118,18 @@ c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4
 c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/cdefs.h:
 
 c:\nxp\bstudio_nxp\workspace\sdk\tools\ba-elf-ba2-r36379\bin\../lib/gcc/ba-elf/4.7.4/../../../../ba-elf/include/sys/string.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg_uart.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi_JN5169.h:
+
+c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/HardwareApi/Include/AppHardwareApi_JN516x.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl.h:
 
@@ -199,5 +216,3 @@ c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_heap.h:
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/dlist.h:
 
 c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/ZCL/Include/zcl_customcommand.h:
-
-c:/NXP/bstudio_nxp/workspace/sdk/JN-SW-4168/Components/DBG/Include/dbg.h:

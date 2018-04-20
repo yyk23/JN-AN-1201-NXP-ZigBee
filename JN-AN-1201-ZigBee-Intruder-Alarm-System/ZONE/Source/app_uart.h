@@ -43,7 +43,7 @@
 #define DEF_LOW_POWER_VALUE        10
 
 //默认心跳时间
-#define DEF_HEARTBEAT_VALUE        0x0003
+#define DEF_HEARTBEAT_VALUE        0x0001
 
 #pragma pack(1)    //按照1字节对齐,指明对齐方式
 
@@ -233,6 +233,6 @@ PUBLIC bool app_SendsSatusDate(void);
 PUBLIC void app_UartSendMesg(APP_uartEventType  type);
 PUBLIC bool  app_SendDveInf(void);
 PUBLIC bool  app_SendSW_Model(void);
-
+PUBLIC bool  app_Sendtest(void);
 
 #endif /* APP_UART_H_ */

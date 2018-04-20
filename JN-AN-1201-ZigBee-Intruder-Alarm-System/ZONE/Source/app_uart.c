@@ -388,6 +388,7 @@ PUBLIC void app_StartJoinConfig(bool flag)
 {
 	start_join_flag=flag;
 }
+
 PUBLIC bool  app_SendsSatusDate(void)
 {
 	ZPS_tsAfProfileDataReq psProfileDataReq1;
@@ -425,8 +426,7 @@ PUBLIC bool  app_SendsSatusDate(void)
 	        		                     TRUE,
 	        		                     &sqen,
 	        		                     E_ZCL_REPORT_ATTRIBUTES);
-	      if(old_send_type==FALSE)
-	      {
+
 
 	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_STATUS);//ID
 	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT8);//map16
@@ -441,26 +441,62 @@ PUBLIC bool  app_SendsSatusDate(void)
 
 	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
-	      }
-	      //以前的数据格式
-	      else
-	      {
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",0x0000);//属性ID
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",0x08);//数据类型
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_power_state);//电量
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sSen_Status_Data.dev_state);//设备状态
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "l",Dev_IeeeAddr);//设备MAC地址
 
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",sizeof(uYcl));//YCL长度
-	       u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "a\x0c",sEP_Dev_Inf.sM_YCL.YCL_Array);//设备MAC地址
-	       PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
-	       ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
-	      }
+	   }
+	 return TRUE;
+
+}
+
+PUBLIC bool  app_Sendtest(void)
+{
+	ZPS_tsAfProfileDataReq psProfileDataReq1;
+	ZPS_tuAddress  tuAddress;
+	static uint8 sqen=1;
+	bool old_send_type=FALSE;
+	volatile uint16 u16PayloadSize=0;
+	PDUM_thAPduInstance hAPduInst;
+
+	tuAddress.u16Addr=0;
+	psProfileDataReq1.uDstAddr=tuAddress;
+	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
+	psProfileDataReq1.u16ClusterId=0x0006;//
+	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
+	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
+	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
+	psProfileDataReq1.u8DstEp=1;
+	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.u8Radius=0;
+	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduMyData);
+	if(hAPduInst == NULL)
+	 {
+		/*申请内存不成功*/
+		return FALSE;
+
+	 }
+	 else
+	 {
+	      sqen = u8GetTransactionSequenceNumber();
+	      u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
+	                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
+	        		                     FALSE,
+	        		                     ZCL_MANUFACTURER_CODE,
+	        		                     TRUE,
+	        		                     TRUE,
+	        		                     &sqen,
+	        		                     E_ZCL_REPORT_ATTRIBUTES);
+
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",0x0000);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_BOOL);//map16
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",0);//设备状态
+
+	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+
+
 	      return TRUE;
 	   }
 
 }
-
 
 /*发送设备的基本信息
  *

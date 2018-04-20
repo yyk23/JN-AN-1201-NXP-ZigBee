@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Wed Apr 18 11:41:39 2018
+ * DATE:           Thu Apr 19 19:25:11 2018
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -658,7 +658,7 @@ PRIVATE ZPS_tsAplAfNodeDescriptor s_sNodeDescriptor = {
     0,
     8,
     0,
-    0x88,
+    0x80,
     0x5950,
     0x7f,
     0x0064,

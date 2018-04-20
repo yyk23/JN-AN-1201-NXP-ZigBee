@@ -53,14 +53,14 @@ typedef struct{
 	uint8 u8CommandID;
 }sZCL_Head;
 
-
+extern  uint8 join_way ;
 /****************************************************************************/
 /***        Exported Functions                                            ***/
 /****************************************************************************/
 PUBLIC void APP_vInitialiseNode(void);
 PUBLIC teNODE_STATES eGetNodeState(void);
 PUBLIC void app_vRestartNode (void);
-
+PUBLIC void app_vStartNodeFactoryNew(void);
 
 
 /****************************************************************************/

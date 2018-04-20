@@ -50,7 +50,7 @@
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
 #ifndef DEBUG_PDM_SAVE
-#define TRACE_PDM_SAVE FALSE
+#define TRACE_PDM_SAVE TRUE
 #else
 #define TRACE_PDM_SAVE TRUE
 #endif
@@ -67,10 +67,10 @@ static PDM_teStatus eStatusReloadCIE1,eStatusReloadCIE2,eStatusReloadCIE3,eStatu
 
 const sAttr_Model_Array  Alarm_Attr_Model_Array={{
 		{0x0500,4},
-		{0xF001,0x01},
-		{0xF002,0x02},
-		{0x0002,0x03},
-		{0xF003,0x04},
+		{0xFF01,0x01},
+		{0xFF02,0x02},
+		{0xFF03,0x03},
+		{0xFF04,0x04},
 }};
 
 /****************************************************************************/
@@ -121,8 +121,9 @@ PUBLIC void vLoadIASCIEFromEEPROM(uint8 u8SourceEndpoint)
                                                         &u16ByteRead);
     DBG_vPrintf(TRACE_PDM_SAVE,"ecie_dev_manage_inf=%d\n",ecie_dev_manage_inf);
 
-    if (ecie_dev_manage_inf != PDM_E_STATUS_OK)
+    if (Coor_Dev_manage.valid_flag != VALID_VALUE)
     {
+    	DBG_vPrintf(TRACE_PDM_SAVE,"ecie_end_dev_inf not VALID");
     	Coor_Dev_manage.valid_flag = VALID_VALUE;
     	Coor_Dev_manage.model_num = 0x01;
     	PDM_eSaveRecordData( PDM_ID_CIE_DEV_MANAGE_INF,
@@ -135,6 +136,7 @@ PUBLIC void vLoadIASCIEFromEEPROM(uint8 u8SourceEndpoint)
     	        			 sizeof(sAttr_Model_Array));//保存默认模型-报警设备模型
 
     }
+
     else
     {
 
@@ -143,7 +145,6 @@ PUBLIC void vLoadIASCIEFromEEPROM(uint8 u8SourceEndpoint)
     	                                                    &Enddev_BasicInf[0],
     	                                                    sizeof(sEnddev_BasicInf)*Coor_Dev_manage.dev_num,
     	                                                    &u16ByteRead);
-
     	 DBG_vPrintf(TRACE_PDM_SAVE,"ecie_end_dev_table=%d\n",ecie_end_dev_table);
 
     	 for(i=0;i<Coor_Dev_manage.model_num;i++)
@@ -312,7 +313,7 @@ PUBLIC uint8 get_CJP_attrID(sAttr_Model_Array *Model_Array , uint16 z_attrID)
 	uint8 i=0;
 	for(i=0; i<Model_Array->Attr_Model[0].head.attrnum; i++)
 	{
-		if(Model_Array->Attr_Model[i+1].attr.CattrID==z_attrID)
+		if(Model_Array->Attr_Model[i+1].attr.zattrID==z_attrID)
 		{
 			return Model_Array->Attr_Model[i+1].attr.CattrID;
 		}

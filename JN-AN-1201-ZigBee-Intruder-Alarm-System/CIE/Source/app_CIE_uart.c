@@ -111,7 +111,7 @@ PUBLIC void Uart_Task_Init(void)
   ZQ_vQueueCreate ( &APP_msgSerialRx, UART_RX_MAX_NUM  , sizeof ( uint8 ), (uint8*)Uart_SRxQueue );//初始化串口接收队列
   ZQ_vQueueCreate ( &APP_msgframe, FRAME_SEQ_MAX_NUM  , sizeof  ( uint16 ), (uint8*)Frame_SeqQueue );//初始化CJP 协议的帧序列号
   CIE_data_Init();
-  Array_init(&Galist,Enddev_BasicInf , MAX_DEV_MANAGE_NUM ,Coor_Dev_manage.dev_num);//初始化设备列表
+  Array_init(&Galist,&Enddev_BasicInf[0] , MAX_DEV_MANAGE_NUM ,Coor_Dev_manage.dev_num);//初始化设备列表
 }
 /*
  * 串口初始化函数

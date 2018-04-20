@@ -96,7 +96,7 @@ extern "C" {
 #define PDM_ID_CIE_DEV_MODEL_TABLE_7   0x56  //模型列表的第7
 #define PDM_ID_CIE_DEV_MODEL_TABLE_8   0x57  //模型列表的第8
 
-
+#define PDM_ID_CIE_CHANNEL             0x0090  //信道存储
 
 
 #else

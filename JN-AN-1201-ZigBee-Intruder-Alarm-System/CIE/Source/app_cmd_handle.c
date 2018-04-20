@@ -38,7 +38,7 @@
 #include "Array_list.h"
 #include "app_CIE_save.h"
 #include "app_cmd_handle.h"
-
+#include "zha_CIE_node.h"
 
 
 PUBLIC CJP_Status fCJP_Tx_Coor(uYcl ycl ,CJP_CmdID cmd_coor , uint8 *pdata , uint8 len)
@@ -80,24 +80,34 @@ PUBLIC CJP_Status fBuildNet(uint8 channel,uint16 panid)
 	CJP_Status status=CJP_SUCCESS;
 	sdata[0] = 0x01;
 	sdata[1] = E_ZCL_UINT8;
-
+    uint16 pdm_id=0x8000;
 	if((channel>26)||(channel<11))
 		sdata[2] = CJP_ERROR;
 	else
 		sdata[2] = CJP_SUCCESS;
 
-
-	DBG_vPrintf(TRACE_APP_UART, "%02x",channel );
-	DBG_vPrintf(TRACE_APP_UART, "%04x",panid );
-
-
 	status=fCJP_Tx_Coor(CIE_Ycl, CJP_BUILD_NET_RESP, sdata , 3);
 	//开始建网
-	if((ZPS_u16AplZdoGetNetworkPanId()!=panid) || (ZPS_u8AplZdoGetRadioChannel()!=channel))
+	if(ZPS_u8AplZdoGetRadioChannel()!=channel)
 	{
+		DBG_vPrintf(TRACE_APP_UART, "%02x",channel );
+		DBG_vPrintf(TRACE_APP_UART, "%04x",panid );
+		ZPS_eAplAibSetApsChannelMask(1<<channel);
+		//保存信道数据
+		PDM_eSaveRecordData( PDM_ID_CIE_CHANNEL,
+		        					 &channel,
+		        					 sizeof(uint8));
 
-		//ZPS_eAplAibSetApsChannelMask (1<<channel);//设置信道
-		//ZPS_eAplZdoStartStack();
+		while(pdm_id < 0xFFFF)
+		{
+			PDM_vDeleteDataRecord(pdm_id++);
+		}
+		vAHI_SwReset();//复位
+
+	}
+	else
+	{
+		fBuildNet_Notice(CJP_SUCCESS);
 	}
 
 	return status;
@@ -121,9 +131,12 @@ PUBLIC void fBuildNet_Notice(CJP_Status status)
 	i++;
 	sdata[i] = E_ZCL_UINT16;
 	i++;
-	sdata[i] = BuildNetNotice.u16PanID;
+	sdata[i] = (uint8)((BuildNetNotice.u16PanID>>8)&0x00FF);
+	sdata[i] = (uint8)((BuildNetNotice.u16PanID)&0x00FF);
 	i+=sizeof(uint16);
 	sdata[i] = E_ZCL_UINT8;
+	i++;
+	sdata[i] = BuildNetNotice.u8Channel;
 	i++;
 
 	Frame_Seq++;//主动发送的序列号+1
@@ -148,6 +161,7 @@ PUBLIC CJP_Status fJoinNet_Set(uint8 time)
 
 	return fCJP_Tx_Coor(CIE_Ycl,  CJP_JOIN_NET_SET_RESP , sdata , 3);
 }
+
 
 
 PUBLIC CJP_Status fDel_Dev(uYcl ycl)
@@ -180,6 +194,50 @@ PUBLIC CJP_Status fDel_Dev(uYcl ycl)
 
 }
 
+
+PUBLIC CJP_Status fDev_Leave_Notice(uint64 mac)
+{
+	uint8 sdata[20],i=0 ,place=0;
+	uYcl ycl;
+	ycl.sYCL.Mac = mac;
+	sEnddev_BasicInf tEnddev_BasicInf;
+    //在设备列表中查找设备的基本信息
+	place = LocateElem(&Galist ,ycl);
+	if(place == 0)
+	{
+		return CJP_ERROR;
+	}
+
+	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
+	{
+		return CJP_ERROR;
+	}
+
+	if(ZPS_u16AplZdoLookupAddr(ycl.sYCL.Mac)==0x0000)
+	{
+		return CJP_ERROR;
+
+	}
+	else{
+		dele_dev_data_manage(ycl); //删除设备列表信息
+	}
+	DBG_vPrintf(TRACE_APP_UART, "A device leave net ycl is\n");
+	printf_array(&ycl, sizeof(ycl));
+	ycl = tEnddev_BasicInf.ycl;
+	sdata[i] = 1;
+	i++;
+	sdata[i] = E_ZCL_OSTRING;
+	i++;
+	sdata[i] = sizeof(uYcl);
+	i++;
+	memcpy(&sdata[i],&ycl , sdata[4]);
+	i+= sizeof(uYcl);
+	i++;
+	Frame_Seq ++;
+	return fCJP_Tx_Coor( CIE_Ycl,CJP_DEV_LEAVED_NOTICE , sdata , i);
+
+}
+
 PUBLIC CJP_Status fDev_Join(uYcl ycl)
 {
 	/*
@@ -206,7 +264,7 @@ PUBLIC CJP_Status fReset_Def_Set(void)
 PUBLIC CJP_Status fRead_Coor_inf(void)
 {
 	sReadCoorInf_Resp readcoorinf_resp;
-	uint8 sdata[20],len=0;
+	uint8 sdata[30],len=0;
 	sAttr_Charact tAttr_Charact[2]={
 				{E_ZCL_OSTRING , (uint32)(&((sReadCoorInf_Resp*)(0))->C_YCL), YCL_LENGTH},
 				{E_ZCL_OSTRING , (uint32)(&((sReadCoorInf_Resp*)(0))->C_Sofe_Ver) , SV_LENGTH},
@@ -215,7 +273,7 @@ PUBLIC CJP_Status fRead_Coor_inf(void)
 	memcpy(&readcoorinf_resp.C_YCL,&CIE_Ycl ,sizeof(uYcl));
 	memcpy(&readcoorinf_resp.C_Sofe_Ver,&CIE_soft_ver ,sizeof(uSoft_Ver));
 
-	len = fCJP_Attr_Handle(sdata , (uint8 *)&readcoorinf_resp ,tAttr_Charact );
+	len = fCJP_Attr_Handle(sdata , (uint8 *)&readcoorinf_resp ,tAttr_Charact ,2);
 	return fCJP_Tx_Coor(CIE_Ycl, CJP_READ_COOR_DEV_INF_RESP , sdata , len);
 }
 
@@ -235,7 +293,7 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 	uYcl tycl=ycl;
 	sEnddev_BasicInf tEnddev_BasicInf ;
 	sReadDevInf_Resp ReadDevInf_Resp;
-	uint8 sdata[50];
+	uint8 sdata[80];
 	sAttr_Charact tAttr_Charact[5]={
 			{E_ZCL_OSTRING , (uint32)(&((sReadDevInf_Resp*)(0))->M_YCL), YCL_LENGTH},
 			{E_ZCL_OSTRING , (uint32)(&((sReadDevInf_Resp*)(0))->M_Soft_Ver) , SV_LENGTH},
@@ -276,7 +334,7 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 
 	ReadDevInf_Resp.HeartCyc = tEnddev_BasicInf.hearttime;
 
-	len = fCJP_Attr_Handle(sdata , (uint8 *)&ReadDevInf_Resp , tAttr_Charact );
+	len = fCJP_Attr_Handle(sdata , (uint8 *)&ReadDevInf_Resp , tAttr_Charact ,5);
 
 	return fCJP_Tx_Coor(CIE_Ycl , CJP_READ_END_DEV_INF_RESP , sdata , len);
 
@@ -290,7 +348,7 @@ PUBLIC CJP_Status fRead_End_inf(uYcl ycl)
 #define MAX_DEV_INF_NUM    10
 PUBLIC CJP_Status fReport_End_Dev_List(void)
 {
-	uint8 sdata[160],len=0,i=0,k=0,frame_num=0,frame_seq=0;
+	uint8 sdata[200],len=0,i=0,k=0,frame_num=0,frame_seq=0;
 	sEnddev_BasicInf tEnddev_BasicInf;
 	uint8 *p=NULL;
 	if(Coor_Dev_manage.dev_num == 0)
@@ -301,7 +359,7 @@ PUBLIC CJP_Status fReport_End_Dev_List(void)
 	frame_seq=1;
 	p=sdata;
 	len=3;
-	for(i=0;i<Coor_Dev_manage.dev_num;i++)
+	for(i=1;i<=Coor_Dev_manage.dev_num;i++)
 	{
 		if(!GetElem(&Galist , i , &tEnddev_BasicInf))
 		{
@@ -316,7 +374,7 @@ PUBLIC CJP_Status fReport_End_Dev_List(void)
 			sdata[0]=k;
 			sdata[1]=frame_seq;
 			sdata[2]=frame_num;
-			fCJP_Tx_Coor(CIE_Ycl , CJP_REPORT_END_DEV_LIST_REQ , sdata , len);
+			fCJP_Tx_Coor(CIE_Ycl , CJP_READ_END_DEV_LIST_RESP , sdata , len);
 			len=3;
 			frame_seq++;
 			k=0;
@@ -361,7 +419,7 @@ PUBLIC CJP_Status fUpdate_End_Dev_Hearttime_Notice(uYcl ycl)
 	}
 	memcpy(&tEnd_Hearttime.E_YCL,&ycl ,sizeof(uYcl));
 	memcpy(&tEnd_Hearttime.E_Hearttime,&tEnddev_BasicInf.hearttime ,sizeof(uint16));
-	len = fCJP_Attr_Handle(sdata , (uint8 *)&tEnd_Hearttime ,tAttr_Charact );
+	len = fCJP_Attr_Handle(sdata , (uint8 *)&tEnd_Hearttime ,tAttr_Charact ,2);
 	Frame_Seq++;//主动发送的序列号+1
 	return fCJP_Tx_Coor(CIE_Ycl , CJP_UPDATE_END_DEV_HEARTTIME_REQ , sdata , len);
 }
@@ -438,9 +496,9 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	psProfileDataReq1.u8SrcEp = PORT_NUM;
 	psProfileDataReq1.eDstAddrMode= ZPS_E_ADDR_MODE_IEEE;
 	psProfileDataReq1.u8DstEp = PORT_NUM;
-	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.eSecurityMode= ZPS_E_APL_AF_UNSECURE;
 	psProfileDataReq1.u8Radius= 0;
-	hAPduInst= PDUM_hAPduAllocateAPduInstance(apduZCL);
+	hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZCL);
 	if(hAPduInst == NULL){
 				/*申请内存不成功*/
 		return CJP_ERROR;
@@ -473,6 +531,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	}
 	return CJP_SUCCESS;
 }
+
 
 
 /*
@@ -539,22 +598,22 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+1+1+1+type_addr_offset));//属性ID
 		//属性值
 		switch(*(indata+1+1+1+type_addr_offset)){
-		case E_ZCL_OSTRING:
-			u8stringlen = *(indata+1+type_addr_offset+1);
-			if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
-				return CJP_ERROR;
-			}
+			case E_ZCL_OSTRING:
+				u8stringlen = *(indata+1+type_addr_offset+1);
+				if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
+					return CJP_ERROR;
+				}
 
-			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",u8stringlen);//属性ID
-			type_addr_offset++;
-			break;
+				u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",u8stringlen);//属性ID
+				type_addr_offset++;
+				break;
 
-		default:
-			eZCL_GetAttributeTypeSize((teZCL_ZCLAttributeType)*(indata+1+type_addr_offset) , &u8stringlen);	//获取长度
-			if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
-				return CJP_ERROR;
-			}
-			break;
+			default:
+				eZCL_GetAttributeTypeSize((teZCL_ZCLAttributeType)*(indata+1+type_addr_offset) , &u8stringlen);	//获取长度
+				if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
+					return CJP_ERROR;
+				}
+				break;
 		}
 		for(j=0;j<u8stringlen;j++){
 			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+1+type_addr_offset+1+j));//属性ID
@@ -587,14 +646,15 @@ PUBLIC CJP_Status fEnd_Alarm_ReportResp( uYcl ycl,uint16 cluster ,uint8 len , ui
  *  * sourcedata  :源数据
   */
 
-PUBLIC uint8 fCJP_Attr_Handle(uint8 *tarray , uint8 * sourcedata ,sAttr_Charact *tAttr_Charact)
+PUBLIC uint8 fCJP_Attr_Handle(uint8 *tarray , uint8 * sourcedata ,sAttr_Charact *tAttr_Charact , uint8 attrnum)
 {
 	uint8  num=0, i=0,len=0;
 	uint8 *dst;
 	uint8 *srt;
 	dst = tarray;
 	srt = sourcedata;
-	num = sizeof(tAttr_Charact)/sizeof(sAttr_Charact);
+	num = attrnum;
+	DBG_vPrintf(TRACE_APP_UART," num = %x" , num);
 	*dst = num;
 	len++;
 	for(i=0;i<num;i++)

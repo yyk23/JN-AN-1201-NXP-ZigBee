@@ -234,7 +234,7 @@ PUBLIC void APP_vInitialiseNode(void)
     {
         app_vStartNodeFactoryNew();
     }
-
+    sDeviceDesc.eNodeState =E_STARTUP;
 
 #ifdef VMS
     bool_t bStatus= bTSL2550_Init();

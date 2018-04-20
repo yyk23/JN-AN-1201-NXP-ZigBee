@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Wed Apr 18 13:48:12 2018
+ * DATE:           Fri Apr 20 11:50:46 2018
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -557,7 +557,7 @@ PRIVATE ZPS_tsAplApsKeyDescriptorTable s_keyPairTable = { s_keyPairTableStorage,
 PRIVATE ZPS_tsAplAib s_sAplAib = {
     0,
     0x0000000000000000ULL,
-    0x00008000UL,
+    0x07fff800UL,
     TRUE,
     TRUE,
     0x02,

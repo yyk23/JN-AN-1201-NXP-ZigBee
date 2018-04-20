@@ -47,6 +47,12 @@
 /* Also update the manufacturer code in .zpscfg: Node Descriptor->misc      */
 #define COOPERATIVE
 
+/* Set this True to disable non error default responses from clusters */
+#define ZCL_DISABLE_DEFAULT_RESPONSES                      (FALSE)
+#define ZCL_DISABLE_APS_ACK                                (FALSE)
+#define OTA_ACKS_ON                                        (TRUE)
+#define OTA_CLIENT_DISABLE_DEFAULT_RESPONSE                (FALSE)
+
 #define ZCL_MANUFACTURER_CODE                               0x5950   //¹«Ë¾´úÂë¡°YP(ÒËÆÍ)¡±
 
 #define HA_NUMBER_OF_ZCL_APPLICATION_TIMERS                 3
@@ -120,9 +126,15 @@
 #define ZCL_ATTRIBUTE_WRITE_SERVER_SUPPORTED
 #define ZCL_ATTRIBUTE_WRITE_CLIENT_SUPPORTED
 
+
+
 #define ZCL_ATTRIBUTE_REPORTING_SERVER_SUPPORTED
 #define ZCL_CONFIGURE_ATTRIBUTE_REPORTING_SERVER_SUPPORTED
 #define ZCL_READ_ATTRIBUTE_REPORTING_CONFIGURATION_SERVER_SUPPORTED
+
+#define ZCL_CONFIGURE_ATTRIBUTE_REPORTING_CLIENT_SUPPORTED
+#define ZCL_ATTRIBUTE_REPORTING_CLIENT_SUPPORTED
+#define ZCL_READ_ATTRIBUTE_REPORTING_CONFIGURATION_CLIENT_SUPPORTED
 
 #define HA_NUMBER_OF_REPORTS 2
 #define HA_SYSTEM_MIN_REPORT_INTERVAL   1

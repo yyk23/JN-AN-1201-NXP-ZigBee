@@ -467,6 +467,9 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	static uint8 sqen=1;
 	volatile uint16 u16PayloadSize=0;
 	PDUM_thAPduInstance hAPduInst;
+	DBG_vPrintf(TRACE_APP_UART, "read attrs req    YCL is\n");
+	printf_array(&ycl, sizeof(ycl));
+	DBG_vPrintf(TRACE_APP_UART, "Attr num  \n", attrsnum);
 	if(ZPS_u16AplZdoLookupAddr(ycl.sYCL.Mac)==0x0000){
 				return  CJP_ERROR;
 	}
@@ -491,7 +494,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	}
 
 	psProfileDataReq1.uDstAddr.u64Addr = ycl.sYCL.Mac;
-	psProfileDataReq1.u16ClusterId = cluster;//
+	psProfileDataReq1.u16ClusterId = tEnddev_BasicInf.clusterID;//
 	psProfileDataReq1.u16ProfileId = PROFILE_ID;
 	psProfileDataReq1.u8SrcEp = PORT_NUM;
 	psProfileDataReq1.eDstAddrMode= ZPS_E_ADDR_MODE_IEEE;
@@ -500,6 +503,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 	psProfileDataReq1.u8Radius= 0;
 	hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZCL);
 	if(hAPduInst == NULL){
+		DBG_vPrintf(TRACE_APP_UART, "PDUM_hAPduAllocateAPduInstance  error");
 				/*申请内存不成功*/
 		return CJP_ERROR;
 
@@ -509,7 +513,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 		sqen = u8GetTransactionSequenceNumber();
 		u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
 			                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
-			        		                     FALSE,
+			        		                     TRUE,
 			        		                     ZCL_MANUFACTURER_CODE,
 			        		                     TRUE,
 			        		                     TRUE,
@@ -518,9 +522,11 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 		// write payload, attribute at a time
 		for(i=0; i<attrsnum; i++)
 		{
-			zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+1+i*2));
+			zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+2+i*2));
+			DBG_vPrintf(TRACE_APP_UART, "CattrID is %02x" , *(indata+1+i*2));
 			if(zattrID==0)
 			{
+				DBG_vPrintf(TRACE_APP_UART, "zattrID cannot find " );
 				return CJP_ERROR;
 			}
 			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h", zattrID);//属性ID
@@ -544,9 +550,10 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 
 PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , uint8 * indata )
 {
-	uint8 i = 0, j = 0 ,u8stringlen=0, type_addr_offset=0;
+	uint8 i = 0, j = 0 ,u8stringlen=0, type_addr_offset=0 ,place=0;
 	uint8 attrsnum = *indata;
 	uint16 zattrID=0;
+	sEnddev_BasicInf tEnddev_BasicInf;
 	sAttr_Model_Array tAttr_Model_Array;
 	ZPS_tsAfProfileDataReq psProfileDataReq1;
 	static uint8 sqen=1;
@@ -559,9 +566,25 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 		return CJP_ERROR;
 	}
 	//进行属性ID的转换处理
+	//在设备列表中查找设备的基本信息
+	place = LocateElem(&Galist,ycl);
+	if(place == 0)
+	{
+		return CJP_ERROR;
+	}
+
+	if(!GetElem(&Galist,place ,&tEnddev_BasicInf))
+	{
+		return CJP_ERROR;
+	}
+	if(!get_dev_model(tEnddev_BasicInf.clusterID, &tAttr_Model_Array))
+	{
+		return CJP_ERROR;
+	}
+	//进行属性ID的转换处理
 	//根据ycl寻找clusterID,根据clusterID寻找属性的ID对应关系。
 	psProfileDataReq1.uDstAddr.u64Addr = ycl.sYCL.Mac;
-	psProfileDataReq1.u16ClusterId = cluster;//
+	psProfileDataReq1.u16ClusterId = tEnddev_BasicInf.clusterID;//
 	psProfileDataReq1.u16ProfileId = PROFILE_ID;
 	psProfileDataReq1.u8SrcEp = PORT_NUM;
 	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_IEEE;
@@ -579,7 +602,7 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 		sqen = u8GetTransactionSequenceNumber();
 		u16PayloadSize = u16ZCL_WriteCommandHeader(	hAPduInst,
 				                   	   	   	   	   	eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
-				        		                    FALSE,
+				        		                    TRUE,
 				        		                    ZCL_MANUFACTURER_CODE,
 				        		                    TRUE,
 				        		                    TRUE,
@@ -588,7 +611,7 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 	}
 	for(i=0 ; i<(attrsnum/2) ; i++){
 		//属性ID
-		zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+1+1+type_addr_offset));
+		zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+2+type_addr_offset));
 		if(zattrID==0)
 		{
 			return CJP_ERROR;

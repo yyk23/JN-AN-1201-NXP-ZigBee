@@ -304,6 +304,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         //	break;
         case E_ZCL_CBET_TIMER:
         case E_ZCL_CBET_ZIGBEE_EVENT:
+        	DBG_vPrintf(TRACE_ZCL, "eEventType is %02x" , psEvent->eEventType);
             DBG_vPrintf(TRACE_ZCL, "EP EVT:No action\r\n");
             break;
 

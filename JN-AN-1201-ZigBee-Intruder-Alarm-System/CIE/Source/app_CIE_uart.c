@@ -370,9 +370,10 @@ static CJP_Status CJP_RxCMDDeal(uint8 *rx_buf)
   Frame_Seq=CJP_Head->u16FSeq;
   AFrame_Seq = CJP_Head->u16ASeq;
 
-  /*
-   * 和终端的通信数据
-   */
+/*
+* 和终端的通信数据
+*/
+
   DBG_vPrintf(TRACE_APP_UART, "UART CmdID = %02x \n", CJP_Head->u8CmdID);
   if(CJP_Head->u8FrType==F_JNI_END)
   {

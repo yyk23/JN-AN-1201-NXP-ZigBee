@@ -454,6 +454,14 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             {
             	ZCL_Frametype = E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE;
             	cjp_commandID = CJP_END_WRITE_ATTR_RESP;
+            	if(psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus == E_ZCL_CMDS_SUCCESS)
+            	{
+            		u8LinkTxBuffer[0]= CJP_SUCCESS;
+            	}
+            	else
+            	{
+            		u8LinkTxBuffer[0]= CJP_ERROR;
+            	}
             }
 
           }
@@ -1185,7 +1193,7 @@ PUBLIC CJP_Status fEndDev_WriteAttr_Resp_Handle(uint64 mac ,uint16 clusterID ,ui
     //只要能够执行这个函数说明写入已经成功
 	u8cjpTxBuffer[0] = 0x01;
 	u8cjpTxBuffer[1] = E_ZCL_UINT8;
-	u8cjpTxBuffer[2] = CJP_SUCCESS;
+	u8cjpTxBuffer[2] = (uint8)*sdata;
 	return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] ,3 );
 
 }

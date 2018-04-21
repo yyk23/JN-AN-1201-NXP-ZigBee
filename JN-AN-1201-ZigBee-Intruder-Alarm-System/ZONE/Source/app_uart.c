@@ -447,6 +447,108 @@ PUBLIC bool  app_SendsSatusDate(void)
 
 }
 
+PUBLIC bool  app_Read_Hearttime_Resp(void)
+{
+	ZPS_tsAfProfileDataReq psProfileDataReq1;
+	ZPS_tuAddress  tuAddress;
+	static uint8 sqen=1;
+	bool old_send_type=FALSE;
+	volatile uint16 u16PayloadSize=0;
+	PDUM_thAPduInstance hAPduInst;
+
+	tuAddress.u16Addr=0;
+	psProfileDataReq1.uDstAddr=tuAddress;
+	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
+	psProfileDataReq1.u16ClusterId=0x0500;//
+	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
+	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
+	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
+	psProfileDataReq1.u8DstEp=1;
+	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.u8Radius=0;
+	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduMyData);
+	if(hAPduInst == NULL)
+	 {
+		/*申请内存不成功*/
+		return FALSE;
+
+	 }
+	 else
+	 {
+	      sqen = u8GetTransactionSequenceNumber();
+	      u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
+	                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
+	        		                     TRUE,
+	        		                     ZCL_MANUFACTURER_CODE,
+	        		                     TRUE,
+	        		                     TRUE,
+	        		                     &sqen,
+	        		                     E_ZCL_READ_ATTRIBUTES_RESPONSE);
+
+//标准的ZigBee的读属性回复数据域格式: 属性ID(2字节)  状态(1字节)   数据类型(1字节)  数据(不定)
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ZONE_HEARTBEAT_TIME);//ID
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_CMDS_SUCCESS);//
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",E_ZCL_UINT16);//
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",sCluster_Basic_Attr.heartbeat_value);//心跳时间
+
+	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+
+	   }
+	 return TRUE;
+
+}
+
+PUBLIC bool  app_Write_Hearttime_Resp(uint8  write_status)
+{
+	ZPS_tsAfProfileDataReq psProfileDataReq1;
+	ZPS_tuAddress  tuAddress;
+	static uint8 sqen=1;
+	bool old_send_type=FALSE;
+	volatile uint16 u16PayloadSize=0;
+	PDUM_thAPduInstance hAPduInst;
+
+	tuAddress.u16Addr=0;
+	psProfileDataReq1.uDstAddr=tuAddress;
+	DBG_vPrintf(TRACE_APP_UART, "dev_inf=0x%x",sEP_Dev_Inf.M_ClusterID);
+	psProfileDataReq1.u16ClusterId=0x0500;//
+	psProfileDataReq1.u16ProfileId=HA_PROFILE_ID;
+	psProfileDataReq1.u8SrcEp=ZONE_ZONE_ENDPOINT;
+	psProfileDataReq1.eDstAddrMode=ZPS_E_ADDR_MODE_SHORT;
+	psProfileDataReq1.u8DstEp=1;
+	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
+	psProfileDataReq1.u8Radius=0;
+	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduMyData);
+	if(hAPduInst == NULL)
+	 {
+		/*申请内存不成功*/
+		return FALSE;
+
+	 }
+	 else
+	 {
+	      sqen = u8GetTransactionSequenceNumber();
+	      u16PayloadSize = u16ZCL_WriteCommandHeader(hAPduInst,
+	                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
+	        		                     TRUE,
+	        		                     ZCL_MANUFACTURER_CODE,
+	        		                     TRUE,
+	        		                     TRUE,
+	        		                     &sqen,
+	        		                     E_ZCL_WRITE_ATTRIBUTES_RESPONSE);
+
+//标准的ZigBee的写属性回复数据域格式:  状态(1字节)  属性ID(2字节)
+	          u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",write_status);//
+	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ZONE_HEARTBEAT_TIME);//ID
+
+	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
+	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
+
+	   }
+	 return TRUE;
+
+}
+
 PUBLIC bool  app_Sendtest(void)
 {
 	ZPS_tsAfProfileDataReq psProfileDataReq1;

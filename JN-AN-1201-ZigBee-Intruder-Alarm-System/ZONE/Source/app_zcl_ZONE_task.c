@@ -80,6 +80,8 @@
 #include "app_ias_unenroll_req.h"
 #include "app_ias_save.h"
 #include "PingParent.h"
+#include "app_uart.h"
+#include "PDM_IDs.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
 /****************************************************************************/
@@ -295,13 +297,31 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         case E_ZCL_CBET_UNLOCK_MUTEX:
             break;
         case E_ZCL_CBET_UNHANDLED_EVENT:
-        case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
-        case E_ZCL_CBET_READ_REQUEST:
-        case E_ZCL_CBET_DEFAULT_RESPONSE:
-        case E_ZCL_CBET_ERROR:
-        	/*发送失败*/
+        	 DBG_vPrintf(TRACE_ZCL, "EndpointCallback Unhandled Event\r\n");
+        	break;
 
-        //	break;
+        //收到读属性请求命令
+        case E_ZCL_CBET_READ_REQUEST:
+        {
+			tsZCL_IndividualAttributesResponse   *psIndividualAttributeResponse = &psEvent->uMessage.sIndividualAttributeResponse;
+			DBG_vPrintf(TRACE_ZCL,"Cluster Id = %04x\n",psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum);
+			DBG_vPrintf(TRACE_ZCL,"Attribute Id = %04x\n",psIndividualAttributeResponse->u16AttributeEnum);
+			DBG_vPrintf(TRACE_ZCL,"Attribute Type = %d\n",psIndividualAttributeResponse->eAttributeDataType);
+			DBG_vPrintf(TRACE_ZCL,"Attribute Status = %d\n",psIndividualAttributeResponse->eAttributeStatus);
+			DBG_vPrintf(TRACE_ZCL,"Attribute Value = %16llx\n",(uint64)(*((uint64*)psIndividualAttributeResponse->pvAttributeData)));
+			//如果收到的是写心跳时间的属性，则进行正常写入，其他属性不能写入。
+			if(
+				   ( SECURITY_AND_SAFETY_CLUSTER_ID_IASZONE == psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum ) &&
+				   ( E_CLD_IASZONE_ZONE_HEARTBEAT_TIME == psIndividualAttributeResponse->u16AttributeEnum )
+			   )
+			{
+
+				app_Read_Hearttime_Resp();
+				DBG_vPrintf(TRACE_ZCL,"Read heart time success = %04x\n",sCluster_Basic_Attr.heartbeat_value);
+			}
+
+			break;
+        }
         case E_ZCL_CBET_TIMER:
         case E_ZCL_CBET_ZIGBEE_EVENT:
         	DBG_vPrintf(TRACE_ZCL, "eEventType is %02x" , psEvent->eEventType);
@@ -317,45 +337,50 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         case E_ZCL_CBET_CHECK_ATTRIBUTE_RANGE:
             vProcessWriteAttributeRangeCheck(psEvent);
         break;
+
+        //收到写属性命令，每个写属性会触发一次这个命令
         case E_ZCL_CBET_WRITE_INDIVIDUAL_ATTRIBUTE:
-            {
+         {
                 tsZCL_IndividualAttributesResponse   *psIndividualAttributeResponse = &psEvent->uMessage.sIndividualAttributeResponse;
                 DBG_vPrintf(TRACE_ZCL,"Cluster Id = %04x\n",psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum);
                 DBG_vPrintf(TRACE_ZCL,"Attribute Id = %04x\n",psIndividualAttributeResponse->u16AttributeEnum);
                 DBG_vPrintf(TRACE_ZCL,"Attribute Type = %d\n",psIndividualAttributeResponse->eAttributeDataType);
                 DBG_vPrintf(TRACE_ZCL,"Attribute Status = %d\n",psIndividualAttributeResponse->eAttributeStatus);
                 DBG_vPrintf(TRACE_ZCL,"Attribute Value = %16llx\n",(uint64)(*((uint64*)psIndividualAttributeResponse->pvAttributeData)));
-
+                //如果收到的是写心跳时间的属性，则进行正常写入，其他属性不能写入。
                 if(
                         ( SECURITY_AND_SAFETY_CLUSTER_ID_IASZONE == psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum ) &&
-                        ( E_CLD_IASZONE_ATTR_ID_IAS_CIE_ADDRESS == psIndividualAttributeResponse->u16AttributeEnum ) &&
-                        ( E_ZCL_CMDS_SUCCESS == psIndividualAttributeResponse->eAttributeStatus)
+                        ( E_CLD_IASZONE_ZONE_HEARTBEAT_TIME == psIndividualAttributeResponse->u16AttributeEnum )
                     )
                 {
 
-                    if(   (uint64)(*((uint64*)psIndividualAttributeResponse->pvAttributeData)) == 0      )
+                    if(   (uint16)(*((uint16*)psIndividualAttributeResponse->pvAttributeData)) == 0 )
                     {
+
+                    	//无效的数值,写属性失败
+                    	//回复写属性错误
+                    	app_Write_Hearttime_Resp(E_ZCL_CMDS_FAILURE);
                     }
                     else
                     {
+                    	sEP_Dev_Inf.sEP_Dev_HeartBeat = (uint16)(*((uint16*)psIndividualAttributeResponse->pvAttributeData));
+                    	sCluster_Basic_Attr.heartbeat_value=(uint16)(*((uint16*)psIndividualAttributeResponse->pvAttributeData));
+                    	PDM_eSaveRecordData(PDM_ID_APP_EP_DEV_INF,&sEP_Dev_Inf,sizeof(tsEP_Dev_Inf));//保存到EEPROM中
+                    	//回复写属性正确
+                    	app_Write_Hearttime_Resp(E_ZCL_CMDS_SUCCESS);
+                    	DBG_vPrintf(TRACE_ZCL,"Write heart time success = %04x\n",sCluster_Basic_Attr.heartbeat_value);
 
-                        /*Make Binding for the Client as all the communication will go to the client*/
-                        ZPS_teStatus eStatus=ZPS_eAplZdoBind(
-                                                psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId,              /*uint16 u16ClusterId,*/
-                                                psEvent->pZPSevent->uEvent.sApsDataIndEvent.u8DstEndpoint,             /*uint8 u8SrcEndpoint,*/
-                                                psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u16Addr,       /*uint16 u16DstAddr,*/
-                                                (uint64)(*((uint64*)psIndividualAttributeResponse->pvAttributeData)),  /*uint64 u64DstIeeeAddr,*/
-                                                psEvent->pZPSevent->uEvent.sApsDataIndEvent.u8SrcEndpoint);           /*uint8 u8DstEndpoint);*/
-                        vSetIASDeviceState(E_IAS_DEV_STATE_READY_TO_ENROLL);
-                        vSaveIASZoneAttributes(psEvent->pZPSevent->uEvent.sApsDataIndEvent.u8DstEndpoint);
-                        DBG_vPrintf(TRACE_ZCL,"Binding status =%d",eStatus);
-                        vSetPingAddress(psEvent->pZPSevent->uEvent.sApsDataIndEvent.uSrcAddress.u16Addr);
+
                     }
                 }
             }
             break;
 
+            //处理完成所有的写属性命令
+        case E_ZCL_CBET_WRITE_ATTRIBUTES:
 
+
+        	break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
             DBG_vPrintf(TRACE_ZCL, "EP EVT: Custom %04x\r\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);

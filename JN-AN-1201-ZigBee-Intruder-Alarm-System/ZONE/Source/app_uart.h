@@ -234,5 +234,6 @@ PUBLIC void app_UartSendMesg(APP_uartEventType  type);
 PUBLIC bool  app_SendDveInf(void);
 PUBLIC bool  app_SendSW_Model(void);
 PUBLIC bool  app_Sendtest(void);
-
+PUBLIC bool  app_Read_Hearttime_Resp(void);
+PUBLIC bool  app_Write_Hearttime_Resp(uint8  write_status);
 #endif /* APP_UART_H_ */

@@ -129,14 +129,15 @@ PUBLIC void fBuildNet_Notice(CJP_Status status)
 	i++;
 	sdata[i] = BuildNetNotice.u8Status;
 	i++;
-	sdata[i] = E_ZCL_UINT16;
-	i++;
-	sdata[i] = (uint8)((BuildNetNotice.u16PanID>>8)&0x00FF);
-	sdata[i] = (uint8)((BuildNetNotice.u16PanID)&0x00FF);
-	i+=sizeof(uint16);
 	sdata[i] = E_ZCL_UINT8;
 	i++;
 	sdata[i] = BuildNetNotice.u8Channel;
+	i++;
+	sdata[i] = E_ZCL_UINT16;
+	i++;
+	sdata[i] = (uint8)((BuildNetNotice.u16PanID>>8)&0x00FF);
+	i++;
+	sdata[i] = (uint8)((BuildNetNotice.u16PanID)&0x00FF);
 	i++;
 
 	Frame_Seq++;//主动发送的序列号+1
@@ -559,10 +560,12 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 	static uint8 sqen=1;
 	volatile uint16 u16PayloadSize=0;
 	PDUM_thAPduInstance hAPduInst;
-	if(ZPS_u16AplZdoLookupAddr(ycl.sYCL.Mac)==0x0000){
+	if(ZPS_u16AplZdoLookupAddr(ycl.sYCL.Mac)==0x0000)
+	{
 				return  CJP_ERROR;
 			}
-	if((attrsnum>10)||(attrsnum==0)||(attrsnum%2!=0)){
+	if((attrsnum>10)||(attrsnum==0)||(attrsnum%2!=0))
+	{
 		return CJP_ERROR;
 	}
 	//进行属性ID的转换处理
@@ -592,12 +595,14 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 	psProfileDataReq1.eSecurityMode=ZPS_E_APL_AF_UNSECURE;
 	psProfileDataReq1.u8Radius=0;
 	hAPduInst=PDUM_hAPduAllocateAPduInstance(apduZCL);
-	if(hAPduInst == NULL){
+	if(hAPduInst == NULL)
+	{
 					/*申请内存不成功*/
 		return CJP_ERROR;
 
 	}
-	else{
+	else
+	{
 
 		sqen = u8GetTransactionSequenceNumber();
 		u16PayloadSize = u16ZCL_WriteCommandHeader(	hAPduInst,
@@ -609,7 +614,8 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 				        		                    &sqen,
 				        		                    E_ZCL_WRITE_ATTRIBUTES_UNDIVIDED);  //写属性
 	}
-	for(i=0 ; i<(attrsnum/2) ; i++){
+	for(i=0 ; i<(attrsnum/2) ; i++)
+	{
 		//属性ID
 		zattrID=get_zigbee_attrID( &tAttr_Model_Array , *(indata+2+type_addr_offset));
 		if(zattrID==0)
@@ -618,29 +624,39 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 		}
 		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h", zattrID);//zigbee属性ID
 		//属性数据类型
-		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+1+1+1+type_addr_offset));//属性ID
+		u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+3+type_addr_offset));//数据类型
 		//属性值
-		switch(*(indata+1+1+1+type_addr_offset)){
-			case E_ZCL_OSTRING:
+		switch(*(indata+3+type_addr_offset))
+		{
+			case E_ZCL_OSTRING://字符类型数据
+			case E_ZCL_CSTRING:
 				u8stringlen = *(indata+1+type_addr_offset+1);
-				if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
+				if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM))
+				{
 					return CJP_ERROR;
 				}
 
 				u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",u8stringlen);//属性ID
 				type_addr_offset++;
+				for(j=0;j<u8stringlen;j++)
+				{
+					u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+4+type_addr_offset+j));//要写入的属性值
+				}
+
 				break;
 
-			default:
-				eZCL_GetAttributeTypeSize((teZCL_ZCLAttributeType)*(indata+1+type_addr_offset) , &u8stringlen);	//获取长度
+			default://8位  16位  32位  64位整型数据
+				eZCL_GetAttributeTypeSize((teZCL_ZCLAttributeType)*(indata+3+type_addr_offset) , &u8stringlen);	//获取长度
 				if((u8stringlen==0)||(u8stringlen>UART_RX_DATA_MAX_NUM)){
 					return CJP_ERROR;
 				}
+				for(j=u8stringlen;j>0;j--)
+				{
+					u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+3+type_addr_offset+j));//要写入的属性值
+				}
 				break;
 		}
-		for(j=0;j<u8stringlen;j++){
-			u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",*(indata+1+type_addr_offset+1+j));//属性ID
-		}
+
 		type_addr_offset+=u8stringlen+3;
 	}
 	PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);

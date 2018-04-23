@@ -49,6 +49,6 @@
  * To override the default setting, copy this
  * file to your apoplication build folder and
  * alter the stack size as required. */
-_stack_size = 4500;
+_stack_size = 6000;
 _minimum_heap_size = 1000;
 

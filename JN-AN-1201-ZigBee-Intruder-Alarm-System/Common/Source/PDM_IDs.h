@@ -71,7 +71,7 @@ extern "C" {
 #define PDM_ID_APP_IASCIE_STRUCT        0x12
 #define PDM_ID_APP_IASCIE_NODE          0x13
 
-//注意0x8000以上是ZPO占用，0x3000~0x3007被JenNet-IP libraries 占用
+//注意0x8000以上是ZDO占用，0x3000~0x3007被JenNet-IP libraries 占用
 #define PDM_ID_APP_EP_DEV_INF           0x20
 
 

@@ -305,7 +305,7 @@ OS_TASK(APP_taskuart)
     		 app_vStartNodeFactoryNew();//重新入网
     		 DBG_vPrintf(TRACE_APP_UART, "app_joinorleave123");
     		 app_StartJoinConfig(TRUE);
-    		 PDM_vDeleteAllDataRecords();//
+    		 PDM_vDeleteAllDataRecords();//删除所有网络节点信息
     		 vAHI_SwReset();
     		 break;
     		 /*读取设备基本信息*/
@@ -539,7 +539,7 @@ PUBLIC bool  app_Write_Hearttime_Resp(uint8  write_status)
 	        		                     &sqen,
 	        		                     E_ZCL_WRITE_ATTRIBUTES_RESPONSE);
 
-//标准的ZigBee的写属性回复数据域格式:  状态(1字节)  属性ID(2字节)
+//标准的ZigBee的写属性回复数据域格式:  状态(1字节)
 	          u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",write_status);//
 
 	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);

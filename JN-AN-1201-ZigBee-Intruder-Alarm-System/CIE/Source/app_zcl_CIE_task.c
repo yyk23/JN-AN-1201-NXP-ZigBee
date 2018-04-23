@@ -1322,7 +1322,7 @@ PUBLIC CJP_Status fEndDev_ReportAttr_Handle(uint64 mac ,uint16 clusterID ,uint8 
 			buflen += u16SizeOfAttribute;
 
 		}
-		if(commandID != E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE)
+		if(commandID != CJP_END_READ_ATTR_RESP)
 		{
 			Frame_Seq++;
 		}

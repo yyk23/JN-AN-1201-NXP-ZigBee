@@ -279,12 +279,11 @@ PUBLIC void vAppWakeCallBack(void)
     else if(sDeviceDesc.eNodeState==E_STARTUP)
     {
     	app_StartJoinConfig(FALSE);
-    	//
     }
     else if(sDeviceDesc.eNodeState==E_REJOINING)
     {
-    	vStartRejoinProcess();
     	//重新连接
+    	vStartRejoinProcess();
     }
 
     App_BusyConfig(TRUE); //设定APP的忙状态

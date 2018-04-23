@@ -710,16 +710,11 @@
     </Endpoints>
     <Endpoints Id="1" Enabled="true" ApplicationDeviceId="1026" ApplicationDeviceVersion="1" Profile="HOME_AUTOMATION" Message="APP_msgZpsEvents_ZCL" Name="ZONE">
       <InputClusters Cluster="Basic" RxAPDU="ZONE->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="Groups" RxAPDU="ZONE->apduZCL" Discoverable="false"/>
-      <InputClusters Cluster="Identify" RxAPDU="ZONE->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="IASZone" RxAPDU="ZONE->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="Scenes" RxAPDU="ZONE->apduZCL" Discoverable="false"/>
-      <InputClusters Cluster="Default" RxAPDU="ZONE->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="Identify" RxAPDU="ZONE->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="Basic" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
-      <OutputClusters Cluster="Groups" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
-      <OutputClusters Cluster="Identify" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="IASZone" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
-      <OutputClusters Cluster="Scenes" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="Identify" TxAPDUs="ZONE->apduZCL" Discoverable="true"/>
     </Endpoints>
     <PDUConfiguration NumNPDUs="24" PDUMMutexName="mutexPDUM">
       <APDUs Id="ZONE->apduZDP" Name="apduZDP" Size="100" Instances="16"/>

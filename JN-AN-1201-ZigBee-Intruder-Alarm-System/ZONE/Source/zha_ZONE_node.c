@@ -169,8 +169,13 @@ PUBLIC void APP_vInitialiseNode(void)
     PDM_teStatus eStatusReload;
     uint16 u16ByteRead;
     DBG_vPrintf(TRACE_ZONE_NODE, "\nAPP_vInitialiseNode*");
-
-
+    uYcl tycl;
+    usLinkKey   tlinkkey_tmp;
+    tycl.sYCL.YCL_ID = YCLID_ED;
+    tycl.sYCL.Mac = ZPS_u64AplZdoGetIeeeAddr();//设备的MAC地址
+    tlinkkey_tmp = Linkkey_Calculate(tycl);
+    DBG_vPrintf(TRACE_APP_UART, "Adding device's link key  is\n");
+    printf_array(&tlinkkey_tmp.LinkKeyArray[0], 16);//打印计算的链接密钥
     /*Initialise the application buttons*/
     /* Initialise buttons; if a button is held down as the device is reset, delete the device
      * context from flash
@@ -189,8 +194,11 @@ PUBLIC void APP_vInitialiseNode(void)
     eStatusReload = eLoadIASZoneServerAttributesFromEEPROM();//将保存的attuibut的值从内存复制到变量sIASZoneDesc
 
     /* Initialise ZBPro stack */
+    //设置特殊的链接密钥
+    //ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&tlinkkey_tmp.LinkKeyArray[0], 0x00, ZPS_APS_GLOBAL_LINK_KEY);
 
-   ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&s_au8LnkKeyArray, 0x00, ZPS_APS_GLOBAL_LINK_KEY);
+    //设置通用的链接密钥
+    ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&s_au8LnkKeyArray, 0x00, ZPS_APS_GLOBAL_LINK_KEY);
     DBG_vPrintf(TRACE_ZONE_NODE, "Set Sec state\n");
 
     /* Store channel mask */
@@ -356,8 +364,9 @@ OS_TASK(APP_ZHA_Switch_Task)
             }
 
             if((ZPS_EVENT_APS_DATA_INDICATION == sStackEvent.eType) &&
-                (0 == sStackEvent.uEvent.sApsDataIndEvent.u8DstEndpoint))
+                (1 == sStackEvent.uEvent.sApsDataIndEvent.u8DstEndpoint))
             {
+            	DBG_vPrintf(TRACE_APP_UART, "aps 1 receive data endpoint1 \n");
             	/*ZPS 相应处理*/
             	// ZPS_tsAfZdpEvent sAfZdpEvent;
             	// zps_bAplZdpUnpackResponse(sStackEvent,&sAfZdpEvent);//处理ZPS数据
@@ -395,6 +404,9 @@ OS_TASK(APP_ZHA_Switch_Task)
      */
     if (sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)//接收到数据处理部分
     {
+    	DBG_vPrintf(TRACE_APP_UART, "aps receive data \n");
+    	DBG_vPrintf(TRACE_APP_UART, "clusterID  is %04x\n" ,sStackEvent.uEvent.sApsDataIndEvent.u16ClusterId );
+
         PDUM_eAPduFreeAPduInstance(sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
     }
     if(sStackEvent.eType == ZPS_EVENT_APS_DATA_ACK)

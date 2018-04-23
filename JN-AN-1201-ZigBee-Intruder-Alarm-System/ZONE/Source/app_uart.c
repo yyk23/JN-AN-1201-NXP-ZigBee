@@ -40,7 +40,6 @@
 #include "IASZone.h"
 
 
-#define TRACE_APP_UART    TRUE
 
 
 #define UART_APP_PORT  E_AHI_UART_1
@@ -134,7 +133,7 @@
 #define UART_DMA_RXBUF_LEN          256
 #define UART_DMA_TXBUF_LEN          256
 
-usLinkKey               sLinkKey={{0x5a, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6c,0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x30, 0x39}};//公共链接密钥
+usLinkKey               tsLinkKey={{0x5a, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6c,0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x30, 0x39}};//公共链接密钥
    tsMS_Type_Sw MS_Type_Sw_Tab[]={
 		{GAS_ALARM_DEV, 	YCLID_METHANE},
 		{SM_ALARM_DEV,  	YCLID_SMOKE},
@@ -211,7 +210,7 @@ static void Uart_Rx_CMDDeal(uint8 *rx_buf);
 static void vStartup(void);
 static uint16 HalUARTWrite(uint8 u8Uart,uint8 *pu8Data,uint16 u16DataLength);
 static void DevInf_init(void);
-static usLinkKey Linkkey_Calculate(uYcl Ycl);
+
 
 
 
@@ -264,7 +263,7 @@ void DevInf_init(void)
 
 	}
 	//basic clusterID基本信息初始化
-	 sLinkKey=Linkkey_Calculate(sEP_Dev_Inf.sM_YCL);//计算链接密钥
+	 tsLinkKey=Linkkey_Calculate(sEP_Dev_Inf.sM_YCL);//计算链接密钥
 	 sCluster_Basic_Attr.sM_YCL=sEP_Dev_Inf.sM_YCL;
 	 sCluster_Basic_Attr.M_ClusterID=sEP_Dev_Inf.M_ClusterID;
 	 sCluster_Basic_Attr.heartbeat_value=sEP_Dev_Inf.sEP_Dev_HeartBeat;
@@ -272,6 +271,9 @@ void DevInf_init(void)
 	 sCluster_Basic_Attr.sM_Sv=sEP_Dev_Inf.sM_Sv;
 	 sCluster_Basic_Attr.Serve_CompanyCode=sEP_Dev_Inf.Serve_CompanyCode;
 	 sCluster_Basic_Attr.sS_Sv=sEP_Dev_Inf.sS_Sv;
+
+	 DBG_vPrintf(TRACE_APP_UART, "uart Adding device's link key  is\n");
+	 printf_array(&tsLinkKey.LinkKeyArray[0], 16);//打印计算的链接密钥
 
 }
 
@@ -539,12 +541,12 @@ PUBLIC bool  app_Write_Hearttime_Resp(uint8  write_status)
 
 //标准的ZigBee的写属性回复数据域格式:  状态(1字节)  属性ID(2字节)
 	          u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "b",write_status);//
-	    	  u16PayloadSize+=PDUM_u16APduInstanceWriteNBO(hAPduInst,u16PayloadSize, "h",E_CLD_IASZONE_ZONE_HEARTBEAT_TIME);//ID
 
 	    	  PDUM_eAPduInstanceSetPayloadSize(hAPduInst, u16PayloadSize);
 	    	  ZPS_eAplAfApsdeDataReq(hAPduInst,(ZPS_tsAfProfileDataReq*)&psProfileDataReq1,&sqen);
 
 	   }
+	DBG_vPrintf(TRACE_APP_UART,"Have Write heart time success \n");
 	 return TRUE;
 
 }
@@ -1139,7 +1141,7 @@ static uint8 CRC_Calculate(uint8 *pBuf, uint8 len)
 }
 
 
-static usLinkKey Linkkey_Calculate(uYcl Ycl)
+PUBLIC usLinkKey Linkkey_Calculate(uYcl Ycl)
 {
 	usLinkKey   linkkey_tmp;
 	uYcl         ycl_tmp=Ycl;
@@ -1155,13 +1157,31 @@ static usLinkKey Linkkey_Calculate(uYcl Ycl)
 	ycl_tmp.YCL_Array[1]=Ycl.YCL_Array[3];
 	ycl_tmp.YCL_Array[0]=Ycl.YCL_Array[2];
 
-	linkkey_tmp.LinkKey_YCL=ycl_tmp;
-	linkkey_tmp.LinkKey_Last4By=((uint32)*(&(ycl_tmp.YCL_Array[11]))+(uint32)*(&(ycl_tmp.YCL_Array[7]))+(uint32)*(&(ycl_tmp.YCL_Array[3])))/0xFFFF;
+	linkkey_tmp.sLinkkey.LinkKey_YCL=ycl_tmp;
+	linkkey_tmp.sLinkkey.LinkKey_Last4By=((uint32)*(&(ycl_tmp.YCL_Array[11]))+(uint32)*(&(ycl_tmp.YCL_Array[7]))+(uint32)*(&(ycl_tmp.YCL_Array[3])))/0xFFFF;
 
 	return linkkey_tmp;
 }
 
+//调试打印数组函数
+PUBLIC void printf_array(uint8 * array , uint8 len)
+{
 
+	uint8 i=0;
+	uint8 *p=array;
+	if(TRACE_APP_UART==TRUE)
+	{
+		DBG_vPrintf(TRACE_APP_UART, "Array[%d]:",len );
+
+		for(i=0; i<len ;i++)
+		{
+			DBG_vPrintf(TRACE_APP_UART, "%02x",*p );
+			p++;
+		}
+		DBG_vPrintf(TRACE_APP_UART, "\n");
+	}
+
+}
 
 
 

@@ -231,9 +231,8 @@ PUBLIC CJP_Status fDev_Leave_Notice(uint64 mac)
 	i++;
 	sdata[i] = sizeof(uYcl);
 	i++;
-	memcpy(&sdata[i],&ycl , sdata[4]);
+	memcpy(&sdata[i],&ycl , sizeof(uYcl));
 	i+= sizeof(uYcl);
-	i++;
 	Frame_Seq ++;
 	return fCJP_Tx_Coor( CIE_Ycl,CJP_DEV_LEAVED_NOTICE , sdata , i);
 
@@ -247,7 +246,10 @@ PUBLIC CJP_Status fDev_Join(uYcl ycl)
 	 */
 	usLinkKey   linkkey_tmp;
 	linkkey_tmp = Linkkey_Calculate(ycl);//计算链接密钥
-	ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&linkkey_tmp, 0x00, ZPS_APS_GLOBAL_LINK_KEY);//设置链接密钥
+	DBG_vPrintf(TRACE_APP_UART, "Adding device's link key  is\n");
+	printf_array(&linkkey_tmp.LinkKeyArray[0], 16);//打印计算的链接密钥
+	//ZPS_eAplZdoAddReplaceLinkKey(ycl.sYCL.Mac , linkkey_tmp.LinkKeyArray , ZPS_APS_UNIQUE_LINK_KEY);  //添加设备的链接密钥
+	//ZPS_vAplSecSetInitialSecurityState(ZPS_ZDO_PRECONFIGURED_LINK_KEY, (uint8 *)&linkkey_tmp, 0x00, ZPS_APS_GLOBAL_LINK_KEY);//设置链接密钥,此函数只在协议栈启动前才可以设置
 	ZPS_eAplZdoPermitJoining(PERMIT_JOIN_TIME);
 	DBG_vPrintf(TRACE_APP_UART, "Adding device's YCL is\n");
 	printf_array(&ycl, sizeof(ycl));
@@ -354,6 +356,7 @@ PUBLIC CJP_Status fReport_End_Dev_List(void)
 	uint8 *p=NULL;
 	if(Coor_Dev_manage.dev_num == 0)
 	{
+		fCJP_Tx_Coor(CIE_Ycl , CJP_READ_END_DEV_LIST_RESP , sdata , 0);//本地没有设备
 		return CJP_SUCCESS;
 	}
 	frame_num=Coor_Dev_manage.dev_num/10+1;//根据设备总数算出需要发送多少帧数据
@@ -516,7 +519,7 @@ PUBLIC CJP_Status fEnd_Read_AttrsReq( uYcl ycl , uint16 cluster , uint8 len , ui
 			                   	   	   	   	   	 eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
 			        		                     TRUE,
 			        		                     ZCL_MANUFACTURER_CODE,
-			        		                     TRUE,
+			        		                     FALSE,  //方向，一定注意，s to C 还是  C  to   S
 			        		                     TRUE,
 			        		                     &sqen,
 			        		                     E_ZCL_READ_ATTRIBUTES);  //读属性
@@ -609,7 +612,7 @@ PUBLIC CJP_Status fEnd_Write_AttrsReq( uYcl ycl , uint16 cluster ,  uint8 len , 
 				                   	   	   	   	   	eFRAME_TYPE_COMMAND_ACTS_ACCROSS_ENTIRE_PROFILE,//统一的命令格式
 				        		                    TRUE,
 				        		                    ZCL_MANUFACTURER_CODE,
-				        		                    TRUE,
+				        		                    FALSE, //方向，一定注意，s to C 还是  C  to   S
 				        		                    TRUE,
 				        		                    &sqen,
 				        		                    E_ZCL_WRITE_ATTRIBUTES_UNDIVIDED);  //写属性

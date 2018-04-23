@@ -341,14 +341,15 @@ PRIVATE  void vHandleStackEvent( ZPS_tsAfEvent sStackEvent )
 
         case ZPS_EVENT_NWK_NEW_NODE_HAS_JOINED:
         	//新设备入网
-
         	ZPS_eAplZdoPermitJoining(0x00);//关闭入网许可
+        	//入网成功 后删除当前的链接密钥
+        //	ZPS_eAplZdoRemoveLinkKey(sStackEvent.uEvent.sNwkJoinIndicationEvent.u64ExtAddr);
         	join_way = sStackEvent.uEvent.sNwkJoinIndicationEvent.u8Rejoin;//设备的入网方式 ：Join(0)  or rejoin(1)
 
             DBG_vPrintf(TRACE_APP_UART, "\nZPS_EVENT_NWK_NEW_NODE_HAS_JOINED\n");
         break;
         case ZPS_EVENT_NWK_LEAVE_INDICATION:
-        	DBG_vPrintf(TRACE_APP_UART, "\ZPS_EVENT_NWK_LEAVE_INDICATION\n");//
+        	DBG_vPrintf(TRACE_APP_UART, "\ ZPS_EVENT_NWK_LEAVE_INDICATION\n");//
         	if( fDev_Leave_Notice(sStackEvent.uEvent.sNwkLeaveIndicationEvent.u64ExtAddr)==CJP_SUCCESS)
         	{
         		DBG_vPrintf(TRACE_APP_UART, "A device leave net success\n");//

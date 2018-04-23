@@ -9,6 +9,11 @@
 #define APP_UART_H_
 
 #include "app_events.h"
+
+
+
+#define TRACE_APP_UART    TRUE
+
 #define BUILD_UINT16(loByte, hiByte) \
           ((uint16)(((loByte) & 0x00FF) + (((hiByte) & 0x00FF) << 8)))
 
@@ -208,7 +213,7 @@ typedef  union {
        struct {
     	   	   uYcl    LinkKey_YCL;
        	       uint32  LinkKey_Last4By;
-       };
+       }sLinkkey;
 }usLinkKey;
 
 
@@ -236,4 +241,7 @@ PUBLIC bool  app_SendSW_Model(void);
 PUBLIC bool  app_Sendtest(void);
 PUBLIC bool  app_Read_Hearttime_Resp(void);
 PUBLIC bool  app_Write_Hearttime_Resp(uint8  write_status);
+PUBLIC usLinkKey Linkkey_Calculate(uYcl Ycl);
+//调试打印数组函数
+PUBLIC void printf_array(uint8 * array , uint8 len);
 #endif /* APP_UART_H_ */

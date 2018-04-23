@@ -318,7 +318,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         tclusterID = psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId;
         tattrID  = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
         DBG_vPrintf(TRACE_APP_UART,"tclusterID = %04x" , tclusterID);
-        DBG_vPrintf(TRACE_APP_UART,"tclusterID = %04x" , tattrID);
+        DBG_vPrintf(TRACE_APP_UART,"tattrID = %04x" , tattrID);
         //属性的数据格式
         switch ( psEvent->uMessage.sIndividualAttributeResponse.eAttributeDataType )
         {
@@ -445,6 +445,12 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             {
             	ZCL_Frametype = E_ZCL_FRAME_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE;
             	cjp_commandID = CJP_END_READ_ATTR_RESP;
+            	DBG_vPrintf(TRACE_APP_UART,"E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE ");
+            	fEndDev_ReportAttr_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+             	u16Length=0;//开始接收新的一帧数据
+				ZCL_Frametype = 0;//准备接收新的一帧数据
+				cjp_commandID = 0;
+				tattr_num = 0;
             }
             else if((psEvent->eEventType == E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTE))
             {
@@ -462,6 +468,12 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             	{
             		u8LinkTxBuffer[0]= CJP_ERROR;
             	}
+            	DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE ");
+            	fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+             	u16Length=0;//开始接收新的一帧数据
+				ZCL_Frametype = 0;//准备接收新的一帧数据
+				cjp_commandID = 0;
+				tattr_num = 0;
             }
 
           }

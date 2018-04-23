@@ -469,7 +469,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             		u8LinkTxBuffer[0]= CJP_ERROR;
             	}
             	DBG_vPrintf(TRACE_APP_UART,"E_ZCL_FRAME_WRITE_ATTRIBUTES_RESPONSE ");
-            	fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&u8LinkTxBuffer[0] , tattr_num , u16Length);
+            	fEndDev_WriteAttr_Resp_Handle(tycl.sYCL.Mac , tclusterID ,cjp_commandID ,&(psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus) , tattr_num , u16Length);
              	u16Length=0;//开始接收新的一帧数据
 				ZCL_Frametype = 0;//准备接收新的一帧数据
 				cjp_commandID = 0;
@@ -1205,7 +1205,7 @@ PUBLIC CJP_Status fEndDev_WriteAttr_Resp_Handle(uint64 mac ,uint16 clusterID ,ui
     //只要能够执行这个函数说明写入已经成功
 	u8cjpTxBuffer[0] = 0x01;
 	u8cjpTxBuffer[1] = E_ZCL_UINT8;
-	u8cjpTxBuffer[2] = (uint8)*sdata;
+	u8cjpTxBuffer[2] = CJP_SUCCESS ;
 	return fCJP_Tx_Coor(tEnddev_BasicInf.ycl , commandID, &u8cjpTxBuffer[0] ,3 );
 
 }
